@@ -119,11 +119,7 @@
                 <p id="last-update" class="text-sm font-bold text-slate-700">--:--:--</p>
               </div>
               <div class="w-px h-8 bg-slate-100"></div>
-              <div class="flex flex-col items-start min-w-[60px]">
-                <p class="text-[10px] text-slate-400 uppercase font-black tracking-tighter text-blue-500">Próxima</p>
-                <p id="countdown" class="text-sm font-bold text-blue-600 tracking-widest">--s</p>
-              </div>
-              <button onclick="fetchData()" class="ml-2 w-10 h-10 bg-slate-50 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-all active:scale-90">
+              <button onclick="manualRefresh()" class="w-10 h-10 bg-slate-50 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-all active:scale-90" title="Atualizar agora">
                 <i data-lucide="refresh-cw" class="w-5 h-5"></i>
               </button>
             </div>
@@ -229,28 +225,33 @@
         </div>
         <h2 class="text-2xl font-black text-slate-900 mb-2">Sem Ligação</h2>
         <p id="error-description" class="text-slate-500 text-sm mb-6">Não foi possível sincronizar os dados.</p>
-        <button onclick="fetchData()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Tentar Novamente</button>
+        <button onclick="manualRefresh()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Tentar Novamente</button>
       </div>
     </div>
 
     <script>
       const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
-      const REFRESH_INTERVAL = 30;
+      const REFRESH_INTERVAL = 5; // Alterado para 5 segundos
 
       let charts = {};
-      let timeLeft = REFRESH_INTERVAL;
       let globalCleanData = [];
       let currentFilterAgent = "Geral";
+      let refreshTimer = null;
 
       Chart.register(ChartDataLabels);
       lucide.createIcons();
 
-      setInterval(() => {
-        timeLeft--;
-        if (timeLeft < 0) timeLeft = REFRESH_INTERVAL;
-        const el = document.getElementById("countdown");
-        if (el) el.innerText = timeLeft.toString().padStart(2, "0") + "s";
-      }, 1000);
+      // Função para gerir o ciclo de atualização automática
+      function startAutoRefresh() {
+        if (refreshTimer) clearInterval(refreshTimer);
+        refreshTimer = setInterval(fetchData, REFRESH_INTERVAL * 1000);
+      }
+
+      // Função para atualização manual instantânea
+      function manualRefresh() {
+        fetchData();
+        startAutoRefresh(); // Reinicia o cronómetro para contar 5s a partir do clique
+      }
 
       const parseDurationToSeconds = (val) => {
         if (val === null || val === undefined || val === "") return 0;
@@ -345,7 +346,6 @@
               globalCleanData = cleanData;
               processData(cleanData);
 
-              timeLeft = REFRESH_INTERVAL;
               errorContainer.classList.add("hidden");
               badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
               if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
@@ -507,8 +507,9 @@
         });
       }
 
+      // Início
       fetchData();
-      setInterval(fetchData, REFRESH_INTERVAL * 1000);
+      startAutoRefresh();
     </script>
   </body>
 </html>
