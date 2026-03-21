@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard Operacional - Gymove Style</title>
     <!-- Tailwind CSS para Estilização -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,509 +14,504 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
-        :root {
-            --primary: #3b82f6;
-            --secondary: #10b981;
-            --accent: #8b5cf6;
-            --bg-main: #F3F4F7;
-        }
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-main);
-        }
+      :root {
+        --primary: #3b82f6;
+        --secondary: #10b981;
+        --accent: #8b5cf6;
+        --bg-main: #f3f4f7;
+      }
 
-        .chart-container { 
-            position: relative; 
-            height: 280px; 
-            width: 100%; 
-        }
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-main);
+      }
 
-        .gym-card {
-            background: #ffffff;
-            border-radius: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-            border: 1px solid rgba(255,255,255,0.8);
-            transition: all 0.3s ease;
-        }
+      .chart-container {
+        position: relative;
+        height: 280px;
+        width: 100%;
+      }
 
-        .gym-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.06);
-        }
+      .gym-card {
+        background: #ffffff;
+        border-radius: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+      }
 
-        .pulse-live {
-            animation: pulse 2s infinite;
-        }
+      .gym-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+      }
 
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.4; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.4; }
-        }
+      .pulse-live {
+        animation: pulse 2s infinite;
+      }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
+      @keyframes pulse {
+        0% { transform: scale(0.9); opacity: 0.4; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(0.9); opacity: 0.4; }
+      }
 
-        .table-row-hover:hover {
-            background-color: #F8FAFC;
-        }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        .nav-item-active {
-            background-color: #eff6ff;
-            color: #3b82f6;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-        }
+      .table-row-hover:hover { background-color: #f8fafc; }
 
-        select {
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 0.5rem center;
-            background-size: 1em;
-        }
+      .nav-item-active {
+        background-color: #eff6ff;
+        color: #3b82f6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+      }
+
+      select {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1em;
+      }
     </style>
-</head>
-<body class="text-slate-800">
-
+  </head>
+  <body class="text-slate-800">
     <div class="flex min-h-screen">
-        <!-- Sidebar -->
-        <div class="hidden lg:flex flex-col w-24 bg-white border-r border-slate-100 items-center py-8 gap-10 sticky top-0 h-screen z-40">
-            <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 cursor-pointer mb-4">
-                <i data-lucide="activity" class="w-6 h-6"></i>
-            </div>
-            
-            <nav class="flex flex-col gap-8 text-slate-400">
-                <div class="nav-item-active p-3.5 rounded-2xl cursor-pointer transition-all group" title="Dashboard Operacional">
-                    <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
-                </div>
-                <div class="p-3.5 hover:bg-slate-50 hover:text-slate-600 rounded-2xl cursor-pointer transition-all" title="Visão de Vendas">
-                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
-                </div>
-            </nav>
-
-            <div class="mt-auto text-slate-300">
-                <i data-lucide="settings" class="w-6 h-6 hover:text-slate-500 cursor-pointer"></i>
-            </div>
+      <!-- Sidebar -->
+      <div class="hidden lg:flex flex-col w-24 bg-white border-r border-slate-100 items-center py-8 gap-10 sticky top-0 h-screen z-40">
+        <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 cursor-pointer mb-4">
+          <i data-lucide="activity" class="w-6 h-6"></i>
         </div>
-
-        <div class="flex-1 p-4 md:p-10 max-w-[1600px] mx-auto w-full">
-            <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-                <div>
-                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Operacional</h1>
-                    <div class="flex items-center gap-3 mt-2">
-                        <span id="status-badge" class="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-100 text-slate-500 text-[11px] font-bold uppercase tracking-widest shadow-sm">
-                            <span id="status-dot" class="w-2 h-2 bg-slate-300 rounded-full"></span>
-                            <span id="status-text">A ligar...</span>
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="flex items-center gap-4">
-                    <div class="bg-white p-3 md:p-4 rounded-[1.5rem] shadow-sm border border-white flex items-center gap-4">
-                        <div class="flex flex-col items-end">
-                            <p class="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Última Sinc.</p>
-                            <p id="last-update" class="text-sm font-bold text-slate-700">--:--:--</p>
-                        </div>
-                        <div class="w-px h-8 bg-slate-100"></div>
-                        <div class="flex flex-col items-start min-w-[60px]">
-                            <p class="text-[10px] text-slate-400 uppercase font-black tracking-tighter text-blue-500">Próxima</p>
-                            <p id="countdown" class="text-sm font-bold text-blue-600 tracking-widest">--s</p>
-                        </div>
-                        <button onclick="fetchData()" class="ml-2 w-10 h-10 bg-slate-50 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-all active:scale-90">
-                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <main class="space-y-8">
-                <!-- KPI Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="gym-card p-8 flex items-center gap-6">
-                        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
-                            <i data-lucide="message-square" class="w-8 h-8"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Atendimentos</p>
-                            <h2 id="kpi-total" class="text-4xl font-black text-slate-900 mt-1">0</h2>
-                        </div>
-                    </div>
-
-                    <!-- TMA CORRIGIDO -->
-                    <div class="gym-card p-8 flex items-center gap-6">
-                        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
-                            <i data-lucide="clock" class="w-8 h-8"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">TMA</p>
-                            <h2 id="kpi-tma" class="text-4xl font-black text-slate-900 mt-1">00:00:00</h2>
-                        </div>
-                    </div>
-
-                    <div class="gym-card p-8 flex items-center gap-6">
-                        <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
-                            <i data-lucide="users-2" class="w-8 h-8"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Agentes Ativos</p>
-                            <h2 id="kpi-analysts" class="text-4xl font-black text-slate-900 mt-1">0</h2>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="gym-card p-8 lg:col-span-1">
-                        <div class="flex items-center justify-between mb-8">
-                            <h3 class="text-xl font-extrabold text-slate-900">Volume Agente</h3>
-                            <i data-lucide="more-horizontal" class="text-slate-300"></i>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="chartAnalyst"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="gym-card p-8 lg:col-span-1">
-                        <div class="flex items-center justify-between mb-8">
-                            <h3 class="text-xl font-extrabold text-slate-900">Status Total</h3>
-                            <i data-lucide="activity" class="text-slate-300"></i>
-                        </div>
-                        <div class="chart-container flex items-center justify-center">
-                            <canvas id="chartStatus"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="gym-card p-8 lg:col-span-1">
-                        <div class="flex items-center justify-between mb-8">
-                            <h3 class="text-xl font-extrabold text-slate-900">Tabulações</h3>
-                            <select id="agent-filter" onchange="handleAgentFilterChange()" class="bg-slate-50 border-none text-[10px] font-black uppercase text-slate-500 rounded-xl px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
-                                <option value="Geral">Geral</option>
-                            </select>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="chartProtocol"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="gym-card p-8 overflow-hidden">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 class="text-xl font-extrabold text-slate-900">Produtividade da Equipa</h3>
-                            <p class="text-xs text-slate-400 font-medium mt-1">Média de contactos distribuídos por tabulação única</p>
-                        </div>
-                        <button class="px-4 py-2 bg-slate-50 text-slate-500 rounded-xl text-xs font-bold hover:bg-slate-100 transition-colors">
-                            Exportar Relatório
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="text-slate-400 text-[11px] uppercase font-black tracking-[0.2em]">
-                                    <th class="pb-6 px-4">Informação do Agente</th>
-                                    <th class="pb-6 px-4">Volume Total</th>
-                                    <th class="pb-6 px-4 text-right">Média/Tabulação</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-body" class="text-slate-700 font-medium"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </main>
+        <nav class="flex flex-col gap-8 text-slate-400">
+          <div class="nav-item-active p-3.5 rounded-2xl cursor-pointer transition-all group" title="Dashboard Operacional">
+            <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+          </div>
+          <div class="p-3.5 hover:bg-slate-50 hover:text-slate-600 rounded-2xl cursor-pointer transition-all" title="Visão de Vendas">
+            <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+          </div>
+        </nav>
+        <div class="mt-auto text-slate-300">
+          <i data-lucide="settings" class="w-6 h-6 hover:text-slate-500 cursor-pointer"></i>
         </div>
+      </div>
+
+      <div class="flex-1 p-4 md:p-10 max-w-[1600px] mx-auto w-full">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Operacional</h1>
+            <div class="flex items-center gap-3 mt-2">
+              <span id="status-badge" class="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-100 text-slate-500 text-[11px] font-bold uppercase tracking-widest shadow-sm">
+                <span id="status-dot" class="w-2 h-2 bg-slate-300 rounded-full"></span>
+                <span id="status-text">A ligar...</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="bg-white p-3 md:p-4 rounded-[1.5rem] shadow-sm border border-white flex items-center gap-4">
+              <div class="flex flex-col items-end">
+                <p class="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Última Sinc.</p>
+                <p id="last-update" class="text-sm font-bold text-slate-700">--:--:--</p>
+              </div>
+              <div class="w-px h-8 bg-slate-100"></div>
+              <div class="flex flex-col items-start min-w-[60px]">
+                <p class="text-[10px] text-slate-400 uppercase font-black tracking-tighter text-blue-500">Próxima</p>
+                <p id="countdown" class="text-sm font-bold text-blue-600 tracking-widest">--s</p>
+              </div>
+              <button onclick="fetchData()" class="ml-2 w-10 h-10 bg-slate-50 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-all active:scale-90">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main class="space-y-8">
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="gym-card p-8 flex items-center gap-6">
+              <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
+                <i data-lucide="message-square" class="w-8 h-8"></i>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Atendimentos</p>
+                <h2 id="kpi-total" class="text-4xl font-black text-slate-900 mt-1">0</h2>
+              </div>
+            </div>
+
+            <div class="gym-card p-8 flex items-center gap-6">
+              <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+                <i data-lucide="clock" class="w-8 h-8"></i>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">TMA (K1)</p>
+                <h2 id="kpi-tma" class="text-4xl font-black text-slate-900 mt-1">00:00:00</h2>
+              </div>
+            </div>
+
+            <div class="gym-card p-8 flex items-center gap-6">
+              <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
+                <i data-lucide="users-2" class="w-8 h-8"></i>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Agentes Ativos</p>
+                <h2 id="kpi-analysts" class="text-4xl font-black text-slate-900 mt-1">0</h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="gym-card p-8 lg:col-span-1">
+              <div class="flex items-center justify-between mb-8">
+                <h3 class="text-xl font-extrabold text-slate-900">Volume Agente</h3>
+                <i data-lucide="more-horizontal" class="text-slate-300"></i>
+              </div>
+              <div class="chart-container">
+                <canvas id="chartAnalyst"></canvas>
+              </div>
+            </div>
+
+            <div class="gym-card p-8 lg:col-span-1">
+              <div class="flex items-center justify-between mb-8">
+                <h3 class="text-xl font-extrabold text-slate-900">Status Total</h3>
+                <i data-lucide="activity" class="text-slate-300"></i>
+              </div>
+              <div class="chart-container flex items-center justify-center">
+                <canvas id="chartStatus"></canvas>
+              </div>
+            </div>
+
+            <div class="gym-card p-8 lg:col-span-1">
+              <div class="flex items-center justify-between mb-8">
+                <h3 class="text-xl font-extrabold text-slate-900">Tabulações</h3>
+                <select id="agent-filter" onchange="handleAgentFilterChange()" class="bg-slate-50 border-none text-[10px] font-black uppercase text-slate-500 rounded-xl px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                  <option value="Geral">Geral</option>
+                </select>
+              </div>
+              <div class="chart-container">
+                <canvas id="chartProtocol"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="gym-card p-8 overflow-hidden">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h3 class="text-xl font-extrabold text-slate-900">Produtividade da Equipa</h3>
+                <p class="text-xs text-slate-400 font-medium mt-1">Média de contactos distribuídos por tabulação única</p>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="text-slate-400 text-[11px] uppercase font-black tracking-[0.2em]">
+                    <th class="pb-6 px-4">Informação do Agente</th>
+                    <th class="pb-6 px-4">Volume Total</th>
+                    <th class="pb-6 px-4 text-right">Média/Tabulação</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body" class="text-slate-700 font-medium"></tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
 
     <div id="error-container" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-2xl">
-            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i data-lucide="wifi-off" class="w-10 h-10"></i>
-            </div>
-            <h2 class="text-2xl font-black text-slate-900 mb-2">Sem Ligação</h2>
-            <p id="error-description" class="text-slate-500 text-sm mb-6">Não foi possível sincronizar os dados.</p>
-            <button onclick="fetchData()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Tentar Novamente</button>
+      <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-2xl">
+        <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="wifi-off" class="w-10 h-10"></i>
         </div>
+        <h2 class="text-2xl font-black text-slate-900 mb-2">Sem Ligação</h2>
+        <p id="error-description" class="text-slate-500 text-sm mb-6">Não foi possível sincronizar os dados.</p>
+        <button onclick="fetchData()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Tentar Novamente</button>
+      </div>
     </div>
 
     <script>
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
-        const REFRESH_INTERVAL = 30; 
-        
-        let charts = {};
-        let timeLeft = REFRESH_INTERVAL;
-        let globalCleanData = [];
-        let currentFilterAgent = "Geral";
+      const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
+      const REFRESH_INTERVAL = 30;
 
-        Chart.register(ChartDataLabels);
-        lucide.createIcons();
+      let charts = {};
+      let timeLeft = REFRESH_INTERVAL;
+      let globalCleanData = [];
+      let currentFilterAgent = "Geral";
 
-        setInterval(() => {
-            timeLeft--;
-            if (timeLeft < 0) timeLeft = REFRESH_INTERVAL;
-            const el = document.getElementById('countdown');
-            if (el) el.innerText = timeLeft.toString().padStart(2, '0') + 's';
-        }, 1000);
+      Chart.register(ChartDataLabels);
+      lucide.createIcons();
 
-        /**
-         * MOTOR DE CÁLCULO TMA CORRIGIDO
-         */
-        const parseDurationToSeconds = (val) => {
-            if (val === null || val === undefined || val === '') return 0;
-            
-            // Se o PapaParse detectar número (Ex: 0.042), multiplica por 86400 (segundos num dia)
-            if (typeof val === 'number') {
-                return val * 86400; 
+      setInterval(() => {
+        timeLeft--;
+        if (timeLeft < 0) timeLeft = REFRESH_INTERVAL;
+        const el = document.getElementById("countdown");
+        if (el) el.innerText = timeLeft.toString().padStart(2, "0") + "s";
+      }, 1000);
+
+      const parseDurationToSeconds = (val) => {
+        if (val === null || val === undefined || val === "") return 0;
+        if (typeof val === "number") return val * 86400;
+        const str = val.toString().trim();
+        if (str.includes(":")) {
+          const parts = str.split(":").map((p) => parseFloat(p) || 0);
+          if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+          if (parts.length === 2) return parts[0] * 60 + parts[1];
+        }
+        const num = parseFloat(str);
+        if (!isNaN(num)) {
+          if (num > 0 && num < 1) return num * 86400;
+          return num;
+        }
+        return 0;
+      };
+
+      const formatSecondsToClock = (totalSeconds) => {
+        if (totalSeconds <= 0) return "00:00:00";
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = Math.round(totalSeconds % 60);
+        const pad = (n) => n.toString().padStart(2, "0");
+        return `${pad(h)}:${pad(m)}:${pad(s)}`;
+      };
+
+      function getContrastColor(color) {
+        if (!color) return "#ffffff";
+        let r, g, b;
+        if (color.startsWith("#")) {
+          const hex = color.replace("#", "");
+          r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substr(0, 2), 16);
+          g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substr(2, 2), 16);
+          b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substr(4, 2), 16);
+        } else if (color.startsWith("rgb")) {
+          const rgb = color.match(/\d+/g);
+          r = parseInt(rgb[0]); g = parseInt(rgb[1]); b = parseInt(rgb[2]);
+        } else return "#ffffff";
+        const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+        return yiq > 128 ? "#000000" : "#ffffff";
+      }
+
+      // Função auxiliar para procurar colunas por nome
+      const getColumnValue = (row, possibleNames) => {
+        for (let name of possibleNames) {
+          const key = Object.keys(row).find(
+            (k) => k.trim().toLowerCase() === name.toLowerCase()
+          );
+          if (key !== undefined) return row[key];
+        }
+        return null;
+      };
+
+      async function fetchData() {
+        const errorContainer = document.getElementById("error-container");
+        const badgeEl = document.getElementById("status-badge");
+        const dotEl = document.getElementById("status-dot");
+        const textEl = document.getElementById("status-text");
+
+        try {
+          const urlWithTime = `${SHEET_URL}${SHEET_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
+          const response = await fetch(urlWithTime, { mode: "cors", cache: "no-store" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const csvText = await response.text();
+
+          // Passo 1: Parse sem cabeçalho para pegar K1
+          Papa.parse(csvText, {
+            header: false,
+            skipEmptyLines: true,
+            complete: function (results) {
+              const rows = results.data;
+              if (rows.length < 2) return;
+
+              // K1 é linha 0, coluna K (índice 10)
+              const tmaRaw = rows[0][10]; 
+              const tmaSeconds = parseDurationToSeconds(tmaRaw);
+              document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
+
+              // Passo 2: O restante é a tabela (Cabeçalho na linha 1)
+              const tableRows = rows.slice(1);
+              const headers = tableRows[0];
+              const dataRows = tableRows.slice(1);
+
+              // Converter para array de objetos (formato original esperado)
+              const cleanData = dataRows.map(row => {
+                let obj = {};
+                headers.forEach((h, i) => obj[h] = row[i]);
+                return obj;
+              }).filter(item => {
+                const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]);
+                return agent && agent.toString().trim() !== "";
+              });
+
+              globalCleanData = cleanData;
+              processData(cleanData);
+
+              timeLeft = REFRESH_INTERVAL;
+              errorContainer.classList.add("hidden");
+              badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
+              if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
+              if (textEl) textEl.innerText = "Ligado";
             }
-            
-            const str = val.toString().trim();
-            
-            // Se for formato de texto HH:MM:SS
-            if (str.includes(':')) {
-                const parts = str.split(':').map(p => parseFloat(p) || 0);
-                if (parts.length === 3) return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
-                if (parts.length === 2) return (parts[0] * 60) + parts[1];
-            }
-
-            // Se for número puro em string
-            const num = parseFloat(str);
-            if (!isNaN(num)) {
-                // Se for fração decimal menor que 1, assume-se fração de dia (formato Sheets)
-                if (num > 0 && num < 1) return num * 86400;
-                return num;
-            }
-            
-            return 0;
-        };
-
-        const formatSecondsToClock = (totalSeconds) => {
-            if (totalSeconds <= 0) return "00:00:00";
-            const h = Math.floor(totalSeconds / 3600);
-            const m = Math.floor((totalSeconds % 3600) / 60);
-            const s = Math.round(totalSeconds % 60);
-            const pad = (n) => n.toString().padStart(2, '0');
-            return `${pad(h)}:${pad(m)}:${pad(s)}`;
-        };
-
-        function getContrastColor(color) {
-            if (!color) return '#ffffff';
-            let r, g, b;
-            if (color.startsWith('#')) {
-                const hex = color.replace('#', '');
-                r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substr(0, 2), 16);
-                g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substr(2, 2), 16);
-                b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substr(4, 2), 16);
-            } else if (color.startsWith('rgb')) {
-                const rgb = color.match(/\d+/g);
-                r = parseInt(rgb[0]); g = parseInt(rgb[1]); b = parseInt(rgb[2]);
-            } else return '#ffffff';
-            const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-            return yiq > 128 ? '#000000' : '#ffffff';
+          });
+        } catch (error) {
+          console.error(error);
+          errorContainer.classList.remove("hidden");
+          badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
+          if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-red-500 rounded-full";
+          if (textEl) textEl.innerText = "Offline";
         }
+      }
 
-        const getColumnValue = (row, possibleNames) => {
-            for (let name of possibleNames) {
-                const key = Object.keys(row).find(k => k.trim().toLowerCase() === name.toLowerCase());
-                if (key !== undefined) return row[key];
-            }
-            return null;
-        };
+      function populateAgentFilter(agents) {
+        const select = document.getElementById("agent-filter");
+        const currentVal = select.value;
+        while (select.options.length > 1) select.remove(1);
+        agents.sort().forEach((agent) => {
+          const opt = document.createElement("option");
+          opt.value = agent;
+          opt.innerHTML = agent;
+          select.appendChild(opt);
+        });
+        if (agents.includes(currentVal)) select.value = currentVal;
+        else select.value = "Geral";
+      }
 
-        async function fetchData() {
-            const errorContainer = document.getElementById('error-container');
-            const badgeEl = document.getElementById('status-badge');
-            const dotEl = document.getElementById('status-dot');
-            const textEl = document.getElementById('status-text');
-            
-            try {
-                const urlWithTime = `${SHEET_URL}${SHEET_URL.includes('?') ? '&' : '?' }t=${Date.now()}`;
-                const response = await fetch(urlWithTime, { mode: 'cors', cache: 'no-store' });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const csvText = await response.text();
-                
-                Papa.parse(csvText, {
-                    header: true, dynamicTyping: true, skipEmptyLines: true,
-                    complete: function(results) {
-                        if (results.data && results.data.length > 0) {
-                            const cleanData = results.data.filter(row => {
-                                const agent = getColumnValue(row, ['Nome Agentes', 'Agente', 'Nome Agente']);
-                                const tempo = getColumnValue(row, ['Tempo Atendimento', 'Duração', 'Tempo de Atendimento']);
-                                return agent && agent.toString().trim() !== "" && (tempo !== null && tempo !== undefined);
-                            });
+      function handleAgentFilterChange() {
+        currentFilterAgent = document.getElementById("agent-filter").value;
+        updateTabulacaoChart(globalCleanData);
+      }
 
-                            globalCleanData = cleanData;
-                            processData(cleanData);
-                            timeLeft = REFRESH_INTERVAL;
-                            errorContainer.classList.add('hidden');
-                            
-                            badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
-                            if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
-                            if (textEl) textEl.innerText = "Ligado";
-                        }
-                    }
-                });
-            } catch (error) {
-                errorContainer.classList.remove('hidden');
-                badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
-                if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-red-500 rounded-full";
-                if (textEl) textEl.innerText = "Offline";
-            }
-        }
+      function processData(data) {
+        const byAgent = {};
+        const byStatus = {};
+        const agentMetrics = {};
 
-        function populateAgentFilter(agents) {
-            const select = document.getElementById('agent-filter');
-            const currentVal = select.value;
-            while (select.options.length > 1) select.remove(1);
-            agents.sort().forEach(agent => {
-                const opt = document.createElement('option');
-                opt.value = agent; opt.innerHTML = agent;
-                select.appendChild(opt);
-            });
-            if (agents.includes(currentVal)) select.value = currentVal;
-            else select.value = "Geral";
-        }
+        data.forEach((item) => {
+          const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]) || "Anónimo";
+          const status = getColumnValue(item, ["Status"]) || "Desconhecido";
+          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto"]) || "Não Classificado";
 
-        function handleAgentFilterChange() {
-            currentFilterAgent = document.getElementById('agent-filter').value;
-            updateTabulacaoChart(globalCleanData);
-        }
+          byAgent[agent] = (byAgent[agent] || 0) + 1;
+          byStatus[status] = (byStatus[status] || 0) + 1;
 
-        function processData(data) {
-            const byAgent = {};
-            const byStatus = {};
-            const agentMetrics = {};
-            let totalSeconds = 0;
+          if (!agentMetrics[agent]) agentMetrics[agent] = { count: 0, uniqueTabs: new Set() };
+          agentMetrics[agent].count++;
+          agentMetrics[agent].uniqueTabs.add(tab);
+        });
 
-            data.forEach(item => {
-                const agent = getColumnValue(item, ['Nome Agentes', 'Agente', 'Nome Agente']) || 'Anónimo';
-                const status = getColumnValue(item, ['Status']) || 'Desconhecido';
-                const tab = getColumnValue(item, ['Tabulação', 'Tabulacao', 'Assunto']) || 'Não Classificado';
-                const durRaw = getColumnValue(item, ['Tempo Atendimento', 'TempoAtendimento', 'Tempo de Atendimento']);
-                
-                const durInSeconds = parseDurationToSeconds(durRaw);
+        const uniqueAgents = Object.keys(byAgent);
+        populateAgentFilter(uniqueAgents);
 
-                byAgent[agent] = (byAgent[agent] || 0) + 1;
-                byStatus[status] = (byStatus[status] || 0) + 1;
-                
-                // Soma para o cálculo da média
-                totalSeconds += durInSeconds;
+        document.getElementById("kpi-total").innerText = data.length;
+        document.getElementById("kpi-analysts").innerText = uniqueAgents.length;
+        document.getElementById("last-update").innerText = new Date().toLocaleTimeString("pt-PT");
 
-                if (!agentMetrics[agent]) agentMetrics[agent] = { count: 0, uniqueTabs: new Set() };
-                agentMetrics[agent].count++;
-                agentMetrics[agent].uniqueTabs.add(tab);
-            });
+        updateCharts(byAgent, byStatus);
+        updateTabulacaoChart(data);
+        updateTable(agentMetrics);
+      }
 
-            const uniqueAgents = Object.keys(byAgent);
-            populateAgentFilter(uniqueAgents);
+      function updateCharts(byAgent, byStatus) {
+        renderChart("chartAnalyst", "bar", {
+          labels: Object.keys(byAgent),
+          datasets: [{
+            data: Object.values(byAgent),
+            backgroundColor: "#3b82f6",
+            borderRadius: 12,
+            barThickness: 30,
+          }],
+        });
 
-            // CÁLCULO DA MÉDIA (TMA) - Divisão obrigatória pelo volume total (25 registros)
-            const avgSeconds = data.length > 0 ? (totalSeconds / data.length) : 0;
+        renderChart("chartStatus", "doughnut", {
+          labels: Object.keys(byStatus),
+          datasets: [{
+            data: Object.values(byStatus),
+            backgroundColor: ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"],
+            borderWidth: 0,
+            hoverOffset: 20,
+          }],
+        }, { cutout: "75%" });
+      }
 
-            document.getElementById('kpi-total').innerText = data.length;
-            
-            // Exibição do valor MÉDIO no formato HH:MM:SS
-            document.getElementById('kpi-tma').innerText = formatSecondsToClock(avgSeconds);
-            
-            document.getElementById('kpi-analysts').innerText = uniqueAgents.length;
-            document.getElementById('last-update').innerText = new Date().toLocaleTimeString('pt-PT');
+      function updateTabulacaoChart(data) {
+        const byTabulacao = {};
+        const filteredData = currentFilterAgent === "Geral" ? data : data.filter(item => getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]) === currentFilterAgent);
 
-            updateCharts(byAgent, byStatus);
-            updateTabulacaoChart(data);
-            updateTable(agentMetrics);
-        }
+        filteredData.forEach((item) => {
+          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto"]) || "Não Classificado";
+          byTabulacao[tab] = (byTabulacao[tab] || 0) + 1;
+        });
 
-        function updateCharts(byAgent, byStatus) {
-            renderChart('chartAnalyst', 'bar', {
-                labels: Object.keys(byAgent),
-                datasets: [{ data: Object.values(byAgent), backgroundColor: '#3b82f6', borderRadius: 12, barThickness: 30 }]
-            });
+        const sortedTabs = Object.entries(byTabulacao).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        renderChart("chartProtocol", "bar", {
+          labels: sortedTabs.map((s) => s[0]),
+          datasets: [{
+            data: sortedTabs.map((s) => s[1]),
+            backgroundColor: "#8b5cf6",
+            borderRadius: 8,
+            barThickness: 20,
+          }],
+        }, { indexAxis: "y" });
+      }
 
-            renderChart('chartStatus', 'doughnut', {
-                labels: Object.keys(byStatus),
-                datasets: [{ data: Object.values(byStatus), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'], borderWidth: 0, hoverOffset: 20 }]
-            }, { cutout: '75%' });
-        }
+      function renderChart(id, type, data, options = {}) {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        if (charts[id]) charts[id].destroy();
+        charts[id] = new Chart(canvas.getContext("2d"), {
+          type: type,
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: type === "doughnut",
+                position: "bottom",
+                labels: { usePointStyle: true, font: { size: 10, weight: "bold" } },
+              },
+              datalabels: {
+                display: true,
+                color: (ctx) => getContrastColor(ctx.dataset.backgroundColor[ctx.dataIndex] || ctx.dataset.backgroundColor),
+                font: { weight: "800", size: 11 },
+                anchor: "center",
+                align: "center",
+                formatter: Math.round,
+              },
+            },
+            scales: type === "bar" ? {
+              y: { grid: { display: false }, ticks: { font: { weight: "bold", size: 10 } } },
+              x: { grid: { display: false }, ticks: { font: { weight: "bold", size: 10 } } },
+            } : {},
+            ...options,
+          },
+        });
+      }
 
-        function updateTabulacaoChart(data) {
-            const byTabulacao = {};
-            const filteredData = currentFilterAgent === "Geral" 
-                ? data 
-                : data.filter(item => getColumnValue(item, ['Nome Agentes', 'Agente', 'Nome Agente']) === currentFilterAgent);
+      function updateTable(metrics) {
+        const tbody = document.getElementById("table-body");
+        tbody.innerHTML = "";
+        Object.keys(metrics).sort((a, b) => metrics[b].count - metrics[a].count).forEach((name) => {
+          const count = metrics[name].count;
+          const numTabs = metrics[name].uniqueTabs.size;
+          const avg = numTabs > 0 ? (count / numTabs).toFixed(2) : 0;
+          tbody.innerHTML += `
+            <tr class="table-row-hover transition-colors">
+              <td class="py-5 px-4"><span class="font-bold text-slate-700">${name}</span></td>
+              <td class="py-5 px-4 font-black text-blue-600">${count}</td>
+              <td class="py-5 px-4 text-right">
+                <span class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl text-[11px] font-black border border-blue-100">
+                  ${avg} <span class="opacity-50">TAB</span>
+                </span>
+              </td>
+            </tr>`;
+        });
+      }
 
-            filteredData.forEach(item => {
-                const tab = getColumnValue(item, ['Tabulação', 'Tabulacao', 'Assunto']) || 'Não Classificado';
-                byTabulacao[tab] = (byTabulacao[tab] || 0) + 1;
-            });
-
-            const sortedTabs = Object.entries(byTabulacao).sort((a,b) => b[1] - a[1]).slice(0, 10);
-            renderChart('chartProtocol', 'bar', {
-                labels: sortedTabs.map(s => s[0]),
-                datasets: [{ data: sortedTabs.map(s => s[1]), backgroundColor: '#8b5cf6', borderRadius: 8, barThickness: 20 }]
-            }, { indexAxis: 'y' });
-        }
-
-        function renderChart(id, type, data, options = {}) {
-            const canvas = document.getElementById(id);
-            if (!canvas) return;
-            if (charts[id]) charts[id].destroy();
-            charts[id] = new Chart(canvas.getContext('2d'), {
-                type: type,
-                data: data,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: type === 'doughnut', position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: 'bold' } } },
-                        datalabels: {
-                            display: true,
-                            color: (ctx) => getContrastColor(ctx.dataset.backgroundColor[ctx.dataIndex] || ctx.dataset.backgroundColor),
-                            font: { weight: '800', size: 11 },
-                            anchor: 'center',
-                            align: 'center',
-                            formatter: Math.round
-                        }
-                    },
-                    scales: type === 'bar' ? {
-                        y: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 } } },
-                        x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 } } }
-                    } : {},
-                    ...options
-                }
-            });
-        }
-
-        function updateTable(metrics) {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
-            Object.keys(metrics).sort((a,b) => metrics[b].count - metrics[a].count).forEach(name => {
-                const count = metrics[name].count;
-                const numTabs = metrics[name].uniqueTabs.size;
-                const avg = numTabs > 0 ? (count / numTabs).toFixed(2) : 0;
-                tbody.innerHTML += `
-                    <tr class="table-row-hover transition-colors">
-                        <td class="py-5 px-4"><span class="font-bold text-slate-700">${name}</span></td>
-                        <td class="py-5 px-4 font-black text-blue-600">${count}</td>
-                        <td class="py-5 px-4 text-right">
-                            <span class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl text-[11px] font-black border border-blue-100">
-                                ${avg} <span class="opacity-50">TAB</span>
-                            </span>
-                        </td>
-                    </tr>`;
-            });
-        }
-
-        fetchData();
-        setInterval(fetchData, REFRESH_INTERVAL * 1000);
+      fetchData();
+      setInterval(fetchData, REFRESH_INTERVAL * 1000);
     </script>
-</body>
+  </body>
 </html>
