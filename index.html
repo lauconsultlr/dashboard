@@ -231,7 +231,7 @@
 
     <script>
       const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
-      const REFRESH_INTERVAL = 5; // Alterado para 5 segundos
+      const REFRESH_INTERVAL = 5; // Ciclo de 5 segundos
 
       let charts = {};
       let globalCleanData = [];
@@ -312,8 +312,15 @@
         const textEl = document.getElementById("status-text");
 
         try {
+          // O parâmetro de tempo no URL já é suficiente para evitar cache
           const urlWithTime = `${SHEET_URL}${SHEET_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
-          const response = await fetch(urlWithTime, { mode: "cors", cache: "no-store" });
+          
+          // Removidos cabeçalhos personalizados que causam erro de CORS com a Google
+          const response = await fetch(urlWithTime, { 
+            mode: "cors", 
+            cache: "no-store"
+          });
+
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const csvText = await response.text();
 
