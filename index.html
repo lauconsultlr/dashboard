@@ -148,7 +148,7 @@
                 <i data-lucide="clock" class="w-8 h-8"></i>
               </div>
               <div>
-                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">TMA (K1)</p>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">TMA</p>
                 <h2 id="kpi-tma" class="text-4xl font-black text-slate-900 mt-1">00:00:00</h2>
               </div>
             </div>
@@ -294,7 +294,6 @@
         return yiq > 128 ? "#000000" : "#ffffff";
       }
 
-      // Função auxiliar para procurar colunas por nome
       const getColumnValue = (row, possibleNames) => {
         for (let name of possibleNames) {
           const key = Object.keys(row).find(
@@ -317,7 +316,6 @@
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const csvText = await response.text();
 
-          // Passo 1: Parse sem cabeçalho para pegar K1
           Papa.parse(csvText, {
             header: false,
             skipEmptyLines: true,
@@ -325,17 +323,16 @@
               const rows = results.data;
               if (rows.length < 2) return;
 
-              // K1 é linha 0, coluna K (índice 10)
+              // Captura o TMA da célula K1 (Linha 0, Coluna 10)
               const tmaRaw = rows[0][10]; 
               const tmaSeconds = parseDurationToSeconds(tmaRaw);
               document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
 
-              // Passo 2: O restante é a tabela (Cabeçalho na linha 1)
+              // Tabela começa na segunda linha (Cabeçalho em rows[1])
               const tableRows = rows.slice(1);
               const headers = tableRows[0];
               const dataRows = tableRows.slice(1);
 
-              // Converter para array de objetos (formato original esperado)
               const cleanData = dataRows.map(row => {
                 let obj = {};
                 headers.forEach((h, i) => obj[h] = row[i]);
