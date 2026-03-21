@@ -136,12 +136,12 @@
         <section class="mb-8 flex flex-wrap items-end gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
            <div class="flex flex-col gap-2">
              <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Início</label>
-             <input type="date" id="date-start" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+             <input type="date" id="date-start" onchange="updateFilterStorage()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
            </div>
 
            <div class="flex flex-col gap-2">
              <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Fim</label>
-             <input type="date" id="date-end" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+             <input type="date" id="date-end" onchange="updateFilterStorage()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
            </div>
 
            <button onclick="resetFilters()" class="p-3 text-slate-400 hover:text-blue-600 transition-colors" title="Limpar Filtros">
@@ -291,7 +291,7 @@
 
     <script>
       const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
-      let REFRESH_INTERVAL = 5;
+      let REFRESH_INTERVAL = parseInt(localStorage.getItem('dash_refresh_interval')) || 5;
 
       let charts = {};
       let globalTableData = []; 
@@ -301,6 +301,22 @@
 
       Chart.register(ChartDataLabels);
       lucide.createIcons();
+
+      // Inicializar campos de data a partir do localStorage
+      window.onload = () => {
+        const savedStart = localStorage.getItem('dash_filter_start');
+        const savedEnd = localStorage.getItem('dash_filter_end');
+        if (savedStart) document.getElementById('date-start').value = savedStart;
+        if (savedEnd) document.getElementById('date-end').value = savedEnd;
+      };
+
+      function updateFilterStorage() {
+        const start = document.getElementById('date-start').value;
+        const end = document.getElementById('date-end').value;
+        localStorage.setItem('dash_filter_start', start);
+        localStorage.setItem('dash_filter_end', end);
+        applyFilters();
+      }
 
       function toggleSettingsModal() {
         const modal = document.getElementById('settings-modal');
@@ -318,6 +334,7 @@
         const newValue = parseInt(input.value);
         if (newValue && newValue >= 1) {
           REFRESH_INTERVAL = newValue;
+          localStorage.setItem('dash_refresh_interval', newValue);
           startAutoRefresh();
           toggleSettingsModal();
         }
@@ -336,6 +353,8 @@
       function resetFilters() {
         document.getElementById('date-start').value = '';
         document.getElementById('date-end').value = '';
+        localStorage.removeItem('dash_filter_start');
+        localStorage.removeItem('dash_filter_end');
         applyFilters();
       }
 
@@ -370,9 +389,9 @@
         let r, g, b;
         if (color.startsWith("#")) {
           const hex = color.replace("#", "");
-          r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substr(0, 2), 16);
-          g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substr(2, 2), 16);
-          b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substr(4, 2), 16);
+          r = parseInt(hex.length === 3 ? hex[0] : hex.substr(0, 2), 16);
+          g = parseInt(hex.length === 3 ? hex[1] : hex.substr(2, 2), 16);
+          b = parseInt(hex.length === 3 ? hex[2] : hex.substr(4, 2), 16);
         } else if (color.startsWith("rgb")) {
           const rgb = color.match(/\d+/g);
           r = parseInt(rgb[0]); g = parseInt(rgb[1]); b = parseInt(rgb[2]);
@@ -391,16 +410,17 @@
         return null;
       };
 
-      // Parser de data mais flexível para lidar com formatos de folha de cálculo
       function parseDateTime(dateStr) {
         if (!dateStr) return null;
         
-        // Tentar parsing direto se o formato for standard (ISO)
-        const directDate = new Date(dateStr);
-        if (!isNaN(directDate.getTime())) return directDate;
+        const str = dateStr.toString().trim();
+        
+        // Tentar parsing direto ISO
+        const isoDate = new Date(str);
+        if (!isNaN(isoDate.getTime()) && str.includes('-')) return isoDate;
 
-        // Fallback para DD/MM/YYYY
-        const parts = dateStr.toString().trim().split(' ');
+        // Fallback robusto para DD/MM/YYYY
+        const parts = str.split(' ');
         const dateParts = parts[0].split('/');
         
         if (dateParts.length === 3) {
@@ -419,7 +439,6 @@
       }
 
       async function fetchData() {
-        const errorContainer = document.getElementById("error-container");
         const badgeEl = document.getElementById("status-badge");
         const dotEl = document.getElementById("status-dot");
         const textEl = document.getElementById("status-text");
@@ -437,19 +456,21 @@
               const rows = results.data;
               if (rows.length < 2) return;
 
-              // TMA da célula K1 (Linha 0, Coluna 10) - Intocado
+              // TMA da célula K1 (Linha 0, Coluna 10) - Permanece como valor absoluto da fonte
               const tmaRaw = rows[0][10]; 
               const tmaSeconds = parseDurationToSeconds(tmaRaw);
               document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
 
-              // Tabela (Cabeçalho na linha 1)
+              // Tabela (Dados começam na linha 2, cabeçalhos na linha 1)
               const tableRows = rows.slice(1);
               const headers = tableRows[0];
               const dataRows = tableRows.slice(1);
 
               globalTableData = dataRows.map(row => {
                 let obj = {};
-                headers.forEach((h, i) => obj[h.trim()] = row[i]);
+                headers.forEach((h, i) => {
+                  if (h) obj[h.trim()] = row[i];
+                });
                 return obj;
               }).filter(item => {
                 const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]);
@@ -458,7 +479,7 @@
 
               applyFilters();
 
-              errorContainer.classList.add("hidden");
+              document.getElementById("error-container").classList.add("hidden");
               badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
               if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
               if (textEl) textEl.innerText = "Ligado";
@@ -466,7 +487,7 @@
           });
         } catch (error) {
           console.error(error);
-          errorContainer.classList.remove("hidden");
+          document.getElementById("error-container").classList.remove("hidden");
           badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
           if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-red-500 rounded-full";
           if (textEl) textEl.innerText = "Offline";
@@ -481,7 +502,7 @@
           const dateStr = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data"]);
           const dateObj = parseDateTime(dateStr);
           
-          if (!dateObj) return true; // Se não houver data, mantém (evita esconder dados base sem data)
+          if (!dateObj) return true; 
 
           if (dateStart) {
             const start = new Date(dateStart);
