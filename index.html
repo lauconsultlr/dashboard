@@ -140,7 +140,7 @@
       </div>
 
       <main class="max-w-7xl mx-auto space-y-6">
-        <!-- KPI Cards - Ajustados para 2 colunas principais -->
+        <!-- KPI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div
             class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors"
@@ -310,10 +310,24 @@
           Papa.parse(csvText, {
             header: true,
             dynamicTyping: true,
-            skipEmptyLines: true,
+            skipEmptyLines: true, // Pula linhas vazias literais
             complete: function (results) {
               if (results.data && results.data.length > 0) {
-                processData(results.data);
+                // FILTRO CRÍTICO: Remove linhas onde campos essenciais estão vazios
+                const cleanData = results.data.filter((row) => {
+                  const agent = getColumnValue(row, [
+                    "Nome Agentes",
+                    "Agente",
+                    "Nome Agente",
+                  ]);
+                  const atendimento = getColumnValue(row, [
+                    "Atendimento",
+                    "Protocolo",
+                  ]);
+                  return agent && agent.toString().trim() !== "" && atendimento;
+                });
+
+                processData(cleanData);
                 timeLeft = REFRESH_INTERVAL;
                 errorContainer.classList.add("hidden");
                 badgeEl.className =
@@ -322,7 +336,7 @@
                   "w-2 h-2 bg-emerald-500 rounded-full pulse-live";
                 textEl.innerText = "Conectado";
               } else {
-                throw new Error("Sem dados");
+                throw new Error("Sem dados na planilha");
               }
             },
           });
@@ -361,6 +375,7 @@
           agentMetrics[agent].uniqueTabs.add(tab);
         });
 
+        // O totalRecords agora reflete apenas as linhas com dados reais
         document.getElementById("kpi-total").innerText = data.length;
         document.getElementById("kpi-analysts").innerText =
           Object.keys(byAgent).length;
