@@ -135,13 +135,6 @@
         <!-- Filtros de Tempo Real -->
         <section class="mb-8 flex flex-wrap items-end gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
            <div class="flex flex-col gap-2">
-             <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Filtrar por Mês</label>
-             <select id="month-filter" onchange="applyFilters()" class="filter-select bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-blue-500 cursor-pointer min-w-[160px]">
-               <option value="Todos">Todos os Meses</option>
-             </select>
-           </div>
-           
-           <div class="flex flex-col gap-2">
              <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Início</label>
              <input type="date" id="date-start" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
            </div>
@@ -154,6 +147,7 @@
            <button onclick="resetFilters()" class="p-3 text-slate-400 hover:text-blue-600 transition-colors" title="Limpar Filtros">
              <i data-lucide="filter-x" class="w-5 h-5"></i>
            </button>
+           <p class="text-[10px] text-slate-300 font-bold uppercase tracking-tight mb-2.5">Baseado em Fim Atendimento</p>
         </section>
 
         <main class="space-y-8">
@@ -300,8 +294,8 @@
       let REFRESH_INTERVAL = 5;
 
       let charts = {};
-      let globalTableData = []; // Dados crus da tabela (sem filtros aplicados)
-      let currentFilteredData = []; // Dados após filtros de data/mês
+      let globalTableData = []; 
+      let currentFilteredData = []; 
       let currentFilterAgent = "Geral";
       let refreshTimer = null;
 
@@ -340,7 +334,6 @@
       }
 
       function resetFilters() {
-        document.getElementById('month-filter').value = 'Todos';
         document.getElementById('date-start').value = '';
         document.getElementById('date-end').value = '';
         applyFilters();
@@ -398,23 +391,31 @@
         return null;
       };
 
-      // Função robusta para converter string de data PT-BR/PT-PT para objeto Date
+      // Parser de data mais flexível para lidar com formatos de folha de cálculo
       function parseDateTime(dateStr) {
         if (!dateStr) return null;
-        // Espera-se DD/MM/YYYY HH:MM:SS
-        const parts = dateStr.split(' ');
+        
+        // Tentar parsing direto se o formato for standard (ISO)
+        const directDate = new Date(dateStr);
+        if (!isNaN(directDate.getTime())) return directDate;
+
+        // Fallback para DD/MM/YYYY
+        const parts = dateStr.toString().trim().split(' ');
         const dateParts = parts[0].split('/');
-        if (dateParts.length !== 3) return null;
         
-        const day = parseInt(dateParts[0]);
-        const month = parseInt(dateParts[1]) - 1;
-        const year = parseInt(dateParts[2]);
-        
-        if (parts[1]) {
-           const timeParts = parts[1].split(':');
-           return new Date(year, month, day, parseInt(timeParts[0]), parseInt(timeParts[1]), parseInt(timeParts[2] || 0));
+        if (dateParts.length === 3) {
+           const day = parseInt(dateParts[0]);
+           const month = parseInt(dateParts[1]) - 1;
+           const year = parseInt(dateParts[2]);
+           
+           if (parts[1]) {
+              const timeParts = parts[1].split(':');
+              return new Date(year, month, day, parseInt(timeParts[0]), parseInt(timeParts[1]), parseInt(timeParts[2] || 0));
+           }
+           return new Date(year, month, day);
         }
-        return new Date(year, month, day);
+        
+        return null;
       }
 
       async function fetchData() {
@@ -436,29 +437,25 @@
               const rows = results.data;
               if (rows.length < 2) return;
 
-              // TMA da célula K1 (Linha 0, Coluna 10) - Permanece Intocado
+              // TMA da célula K1 (Linha 0, Coluna 10) - Intocado
               const tmaRaw = rows[0][10]; 
               const tmaSeconds = parseDurationToSeconds(tmaRaw);
               document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
 
-              // Tabela (Cabeçalho em rows[1], Dados em rows[2+])
+              // Tabela (Cabeçalho na linha 1)
               const tableRows = rows.slice(1);
               const headers = tableRows[0];
               const dataRows = tableRows.slice(1);
 
               globalTableData = dataRows.map(row => {
                 let obj = {};
-                headers.forEach((h, i) => obj[h] = row[i]);
+                headers.forEach((h, i) => obj[h.trim()] = row[i]);
                 return obj;
               }).filter(item => {
                 const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]);
                 return agent && agent.toString().trim() !== "";
               });
 
-              // Atualizar dinamicamente os meses disponíveis no seletor
-              updateMonthOptions(globalTableData);
-              
-              // Aplicar filtros atuais
               applyFilters();
 
               errorContainer.classList.add("hidden");
@@ -476,63 +473,22 @@
         }
       }
 
-      function updateMonthOptions(data) {
-        const monthSelect = document.getElementById('month-filter');
-        const currentVal = monthSelect.value;
-        const months = new Set();
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-
-        data.forEach(item => {
-          const dateStr = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data"]);
-          const dateObj = parseDateTime(dateStr);
-          if (dateObj) {
-            const key = `${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
-            months.add(key);
-          }
-        });
-
-        // Limpar e repovoar
-        while (monthSelect.options.length > 1) monthSelect.remove(1);
-        Array.from(months).sort((a, b) => {
-            const dateA = new Date(a.split(' ')[1], monthNames.indexOf(a.split(' ')[0]));
-            const dateB = new Date(b.split(' ')[1], monthNames.indexOf(b.split(' ')[0]));
-            return dateB - dateA; // Mais recente primeiro
-        }).forEach(m => {
-          const opt = document.createElement('option');
-          opt.value = m;
-          opt.innerText = m;
-          monthSelect.appendChild(opt);
-        });
-        
-        monthSelect.value = months.has(currentVal) ? currentVal : "Todos";
-      }
-
       function applyFilters() {
-        const monthFilter = document.getElementById('month-filter').value;
-        const dateStart = document.getElementById('date-start').value; // YYYY-MM-DD
-        const dateEnd = document.getElementById('date-end').value;     // YYYY-MM-DD
-        
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const dateStart = document.getElementById('date-start').value;
+        const dateEnd = document.getElementById('date-end').value;
 
         currentFilteredData = globalTableData.filter(item => {
           const dateStr = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data"]);
           const dateObj = parseDateTime(dateStr);
-          if (!dateObj) return true;
+          
+          if (!dateObj) return true; // Se não houver data, mantém (evita esconder dados base sem data)
 
-          // Filtro de Mês
-          if (monthFilter !== "Todos") {
-            const itemMonthKey = `${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
-            if (itemMonthKey !== monthFilter) return false;
-          }
-
-          // Filtro de Data Início
           if (dateStart) {
             const start = new Date(dateStart);
             start.setHours(0, 0, 0, 0);
             if (dateObj < start) return false;
           }
 
-          // Filtro de Data Fim
           if (dateEnd) {
             const end = new Date(dateEnd);
             end.setHours(23, 59, 59, 999);
