@@ -96,7 +96,9 @@
           </div>
         </nav>
         <div class="mt-auto text-slate-300">
-          <i data-lucide="settings" class="w-6 h-6 hover:text-slate-500 cursor-pointer"></i>
+          <button onclick="toggleSettingsModal()" class="p-2 hover:bg-slate-50 hover:text-slate-600 rounded-2xl transition-all">
+            <i data-lucide="settings" class="w-6 h-6"></i>
+          </button>
         </div>
       </div>
 
@@ -218,6 +220,43 @@
       </div>
     </div>
 
+    <!-- Modal de Configurações -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
+            <i data-lucide="settings" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-black text-slate-900">Configurações</h2>
+            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Painel de Controlo</p>
+          </div>
+        </div>
+        
+        <div class="space-y-6">
+          <div>
+            <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Tempo de Atualização (Segundos)</label>
+            <div class="relative">
+              <input 
+                id="refresh-input" 
+                type="number" 
+                min="1" 
+                max="300" 
+                class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold text-slate-700 focus:border-blue-500 focus:ring-0 transition-all outline-none"
+              >
+              <span class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold">s</span>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 font-medium">O painel irá sincronizar automaticamente com a Google Sheets neste intervalo.</p>
+          </div>
+
+          <div class="flex gap-3">
+            <button onclick="toggleSettingsModal()" class="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold hover:bg-slate-100 transition-all">Cancelar</button>
+            <button onclick="saveSettings()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="error-container" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-2xl">
         <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -231,7 +270,7 @@
 
     <script>
       const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
-      const REFRESH_INTERVAL = 5; // Ciclo de 5 segundos
+      let REFRESH_INTERVAL = 5; // Variável dinâmica agora
 
       let charts = {};
       let globalCleanData = [];
@@ -240,6 +279,28 @@
 
       Chart.register(ChartDataLabels);
       lucide.createIcons();
+
+      // Funções de UI para Configurações
+      function toggleSettingsModal() {
+        const modal = document.getElementById('settings-modal');
+        const input = document.getElementById('refresh-input');
+        if (modal.classList.contains('hidden')) {
+          input.value = REFRESH_INTERVAL;
+          modal.classList.remove('hidden');
+        } else {
+          modal.classList.add('hidden');
+        }
+      }
+
+      function saveSettings() {
+        const input = document.getElementById('refresh-input');
+        const newValue = parseInt(input.value);
+        if (newValue && newValue >= 1) {
+          REFRESH_INTERVAL = newValue;
+          startAutoRefresh();
+          toggleSettingsModal();
+        }
+      }
 
       // Função para gerir o ciclo de atualização automática
       function startAutoRefresh() {
@@ -250,7 +311,7 @@
       // Função para atualização manual instantânea
       function manualRefresh() {
         fetchData();
-        startAutoRefresh(); // Reinicia o cronómetro para contar 5s a partir do clique
+        startAutoRefresh(); // Reinicia o cronómetro para contar o intervalo a partir do clique
       }
 
       const parseDurationToSeconds = (val) => {
@@ -312,15 +373,8 @@
         const textEl = document.getElementById("status-text");
 
         try {
-          // O parâmetro de tempo no URL já é suficiente para evitar cache
           const urlWithTime = `${SHEET_URL}${SHEET_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
-          
-          // Removidos cabeçalhos personalizados que causam erro de CORS com a Google
-          const response = await fetch(urlWithTime, { 
-            mode: "cors", 
-            cache: "no-store"
-          });
-
+          const response = await fetch(urlWithTime, { mode: "cors", cache: "no-store" });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const csvText = await response.text();
 
@@ -331,12 +385,12 @@
               const rows = results.data;
               if (rows.length < 2) return;
 
-              // Captura o TMA da célula K1 (Linha 0, Coluna 10)
+              // TMA da célula K1 (Linha 0, Coluna 10)
               const tmaRaw = rows[0][10]; 
               const tmaSeconds = parseDurationToSeconds(tmaRaw);
               document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
 
-              // Tabela começa na segunda linha (Cabeçalho em rows[1])
+              // Tabela (Cabeçalho em rows[1])
               const tableRows = rows.slice(1);
               const headers = tableRows[0];
               const dataRows = tableRows.slice(1);
