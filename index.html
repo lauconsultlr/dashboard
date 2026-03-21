@@ -385,6 +385,7 @@
       }
 
       function updateCharts(byAgent, byStatus, byTabulacao) {
+        // Volume por Agente
         renderChart(
           "chartAnalyst",
           "bar",
@@ -402,6 +403,7 @@
           { plugins: { legend: { display: false } } },
         );
 
+        // Status
         renderChart(
           "chartStatus",
           "doughnut",
@@ -433,15 +435,20 @@
           },
         );
 
+        // Por Tabulação (Ordenado Decrescente)
+        const sortedProtocol = Object.entries(byTabulacao).sort(
+          (a, b) => b[1] - a[1],
+        );
+
         renderChart(
           "chartProtocol",
           "bar",
           {
-            labels: Object.keys(byTabulacao),
+            labels: sortedProtocol.map((item) => item[0]),
             datasets: [
               {
                 label: "Qtd",
-                data: Object.values(byTabulacao),
+                data: sortedProtocol.map((item) => item[1]),
                 backgroundColor: "#8b5cf6",
                 borderRadius: 4,
               },
