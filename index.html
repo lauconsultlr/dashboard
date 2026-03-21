@@ -244,7 +244,7 @@
 
     <!-- Modal de Configurações -->
     <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl">
+      <div class="bg-white rounded-[2rem] p-8 max-sm w-full shadow-2xl">
         <div class="flex items-center gap-4 mb-6">
           <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
             <i data-lucide="settings" class="w-6 h-6"></i>
@@ -410,16 +410,11 @@
         return null;
       };
 
-      /**
-       * PARSER DE DATA CORRIGIDO
-       * Converte DD/MM/YYYY para objeto Date local garantindo precisão
-       */
       function parseDateTime(dateStr) {
         if (!dateStr) return null;
         
         const str = dateStr.toString().trim();
         
-        // Formato DD/MM/YYYY HH:MM:SS ou DD/MM/YYYY
         if (str.includes('/')) {
            const parts = str.split(' ');
            const dateParts = parts[0].split('/');
@@ -441,7 +436,6 @@
            }
         }
         
-        // Fallback ISO (YYYY-MM-DD)
         const isoDate = new Date(str);
         return isNaN(isoDate.getTime()) ? null : isoDate;
       }
@@ -463,11 +457,6 @@
             complete: function (results) {
               const rows = results.data;
               if (rows.length < 2) return;
-
-              // TMA da célula K1 (Linha 0, Coluna 10)
-              const tmaRaw = rows[0][10]; 
-              const tmaSeconds = parseDurationToSeconds(tmaRaw);
-              document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
 
               // Tabela (Cabeçalho na linha 1, Dados na linha 2)
               const tableRows = rows.slice(1);
@@ -510,19 +499,15 @@
           const dateStr = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data"]);
           const dateObj = parseDateTime(dateStr);
           
-          // Se o filtro estiver ativo, datas inválidas ou vazias são removidas para precisão
           if ((dateStart || dateEnd) && !dateObj) return false;
-          // Se não houver filtros, mostra tudo
           if (!dateStart && !dateEnd) return true;
 
           if (dateStart) {
-            // Comparação inclusiva a partir das 00:00:00 do dia selecionado
             const start = new Date(dateStart + "T00:00:00");
             if (dateObj < start) return false;
           }
 
           if (dateEnd) {
-            // Comparação inclusiva até às 23:59:59 do dia selecionado
             const end = new Date(dateEnd + "T23:59:59");
             if (dateObj > end) return false;
           }
@@ -556,11 +541,16 @@
         const byAgent = {};
         const byStatus = {};
         const agentMetrics = {};
+        let totalSecondsFiltered = 0;
 
         data.forEach((item) => {
           const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]) || "Anónimo";
           const status = getColumnValue(item, ["Status"]) || "Desconhecido";
           const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto"]) || "Não Classificado";
+          const durationRaw = getColumnValue(item, ["Tempo Atendimento", "TempoAtendimento", "Duração"]);
+
+          // Acumular tempo para cálculo dinâmico do TMA
+          totalSecondsFiltered += parseDurationToSeconds(durationRaw);
 
           byAgent[agent] = (byAgent[agent] || 0) + 1;
           byStatus[status] = (byStatus[status] || 0) + 1;
@@ -572,6 +562,11 @@
 
         const uniqueAgents = Object.keys(byAgent);
         populateAgentFilter(uniqueAgents);
+
+        // CÁLCULO DINÂMICO DO TMA CONFORME O FILTRO
+        // Fórmula: SOMA(Tempo) / CONTAR(Registos)
+        const tmaSeconds = data.length > 0 ? (totalSecondsFiltered / data.length) : 0;
+        document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
 
         document.getElementById("kpi-total").innerText = data.length;
         document.getElementById("kpi-analysts").innerText = uniqueAgents.length;
