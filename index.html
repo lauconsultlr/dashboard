@@ -36,7 +36,6 @@
             width: 100%; 
         }
 
-        /* Gymove Card Style */
         .gym-card {
             background: #ffffff;
             border-radius: 2rem;
@@ -60,7 +59,6 @@
             100% { transform: scale(0.9); opacity: 0.4; }
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -76,14 +74,12 @@
             background-color: #F8FAFC;
         }
 
-        /* Nav Item Styles */
         .nav-item-active {
             background-color: #eff6ff;
             color: #3b82f6;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
         }
 
-        /* Select styling override */
         select {
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -117,7 +113,6 @@
         </div>
 
         <div class="flex-1 p-4 md:p-10 max-w-[1600px] mx-auto w-full">
-            <!-- Header -->
             <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                 <div>
                     <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Operacional</h1>
@@ -150,7 +145,6 @@
             <main class="space-y-8">
                 <!-- KPI Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Volume Total -->
                     <div class="gym-card p-8 flex items-center gap-6">
                         <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
                             <i data-lucide="message-square" class="w-8 h-8"></i>
@@ -161,7 +155,7 @@
                         </div>
                     </div>
 
-                    <!-- TMA (Tempo Médio de Atendimento) -->
+                    <!-- TMA CORRIGIDO -->
                     <div class="gym-card p-8 flex items-center gap-6">
                         <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
                             <i data-lucide="clock" class="w-8 h-8"></i>
@@ -172,7 +166,6 @@
                         </div>
                     </div>
 
-                    <!-- Agentes -->
                     <div class="gym-card p-8 flex items-center gap-6">
                         <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
                             <i data-lucide="users-2" class="w-8 h-8"></i>
@@ -184,7 +177,6 @@
                     </div>
                 </div>
 
-                <!-- Gráficos Principais -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="gym-card p-8 lg:col-span-1">
                         <div class="flex items-center justify-between mb-8">
@@ -219,18 +211,16 @@
                     </div>
                 </div>
 
-                <!-- Tabela de Produtividade -->
                 <div class="gym-card p-8 overflow-hidden">
                     <div class="flex items-center justify-between mb-8">
                         <div>
                             <h3 class="text-xl font-extrabold text-slate-900">Produtividade da Equipa</h3>
-                            <p class="text-xs text-slate-400 font-medium mt-1">Média de contatos distribuídos por tabulação única</p>
+                            <p class="text-xs text-slate-400 font-medium mt-1">Média de contactos distribuídos por tabulação única</p>
                         </div>
                         <button class="px-4 py-2 bg-slate-50 text-slate-500 rounded-xl text-xs font-bold hover:bg-slate-100 transition-colors">
                             Exportar Relatório
                         </button>
                     </div>
-                    
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead>
@@ -240,9 +230,7 @@
                                     <th class="pb-6 px-4 text-right">Média/Tabulação</th>
                                 </tr>
                             </thead>
-                            <tbody id="table-body" class="text-slate-700 font-medium">
-                                <!-- JS -->
-                            </tbody>
+                            <tbody id="table-body" class="text-slate-700 font-medium"></tbody>
                         </table>
                     </div>
                 </div>
@@ -250,20 +238,18 @@
         </div>
     </div>
 
-    <!-- Error Overlay -->
     <div id="error-container" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-2xl">
             <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i data-lucide="wifi-off" class="w-10 h-10"></i>
             </div>
             <h2 class="text-2xl font-black text-slate-900 mb-2">Sem Ligação</h2>
-            <p id="error-description" class="text-slate-500 text-sm mb-6">Não foi possível sincronizar os dados da sua base no momento.</p>
+            <p id="error-description" class="text-slate-500 text-sm mb-6">Não foi possível sincronizar os dados.</p>
             <button onclick="fetchData()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Tentar Novamente</button>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO ---
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
         const REFRESH_INTERVAL = 30; 
         
@@ -275,7 +261,6 @@
         Chart.register(ChartDataLabels);
         lucide.createIcons();
 
-        // Timer de refresh
         setInterval(() => {
             timeLeft--;
             if (timeLeft < 0) timeLeft = REFRESH_INTERVAL;
@@ -284,40 +269,36 @@
         }, 1000);
 
         /**
-         * CORREÇÃO TMA: Converte adequadamente os dados da folha de cálculo.
-         * Em CSV de planilhas, tempo pode vir como string "01:00:35" 
-         * ou como número decimal (ex: 0.0421 -> fração do dia).
+         * MOTOR DE CÁLCULO TMA CORRIGIDO
          */
         const parseDurationToSeconds = (val) => {
             if (val === null || val === undefined || val === '') return 0;
             
-            // Se PapaParse detectar como número (fração do dia no Sheets/Excel)
-            // 1.0 representa 24 horas (86400 segundos)
+            // Se o PapaParse detectar número (Ex: 0.042), multiplica por 86400 (segundos num dia)
             if (typeof val === 'number') {
                 return val * 86400; 
             }
             
             const str = val.toString().trim();
-            // Caso seja um número puro enviado como string
-            if (!str.includes(':') && !isNaN(str)) {
-                return parseFloat(str) || 0;
+            
+            // Se for formato de texto HH:MM:SS
+            if (str.includes(':')) {
+                const parts = str.split(':').map(p => parseFloat(p) || 0);
+                if (parts.length === 3) return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+                if (parts.length === 2) return (parts[0] * 60) + parts[1];
             }
 
-            // Tratamento de formato de relógio HH:MM:SS ou MM:SS
-            const parts = str.split(':').map(p => parseFloat(p) || 0);
-            if (parts.length === 3) {
-                // HH:MM:SS
-                return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
-            } else if (parts.length === 2) {
-                // MM:SS
-                return (parts[0] * 60) + parts[1];
+            // Se for número puro em string
+            const num = parseFloat(str);
+            if (!isNaN(num)) {
+                // Se for fração decimal menor que 1, assume-se fração de dia (formato Sheets)
+                if (num > 0 && num < 1) return num * 86400;
+                return num;
             }
+            
             return 0;
         };
 
-        /**
-         * Formata segundos para o formato HH:MM:SS exato
-         */
         const formatSecondsToClock = (totalSeconds) => {
             if (totalSeconds <= 0) return "00:00:00";
             const h = Math.floor(totalSeconds / 3600);
@@ -369,8 +350,8 @@
                         if (results.data && results.data.length > 0) {
                             const cleanData = results.data.filter(row => {
                                 const agent = getColumnValue(row, ['Nome Agentes', 'Agente', 'Nome Agente']);
-                                const atendimento = getColumnValue(row, ['Atendimento', 'Protocolo']);
-                                return agent && agent.toString().trim() !== "" && atendimento;
+                                const tempo = getColumnValue(row, ['Tempo Atendimento', 'Duração', 'Tempo de Atendimento']);
+                                return agent && agent.toString().trim() !== "" && (tempo !== null && tempo !== undefined);
                             });
 
                             globalCleanData = cleanData;
@@ -385,7 +366,6 @@
                     }
                 });
             } catch (error) {
-                console.error("Erro na busca:", error);
                 errorContainer.classList.remove('hidden');
                 badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
                 if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-red-500 rounded-full";
@@ -415,20 +395,21 @@
             const byAgent = {};
             const byStatus = {};
             const agentMetrics = {};
-            let totalSecondsAccumulated = 0;
+            let totalSeconds = 0;
 
             data.forEach(item => {
                 const agent = getColumnValue(item, ['Nome Agentes', 'Agente', 'Nome Agente']) || 'Anónimo';
                 const status = getColumnValue(item, ['Status']) || 'Desconhecido';
-                const tab = getColumnValue(item, ['Tabulação', 'Tabulacao']) || 'Não Classificado';
+                const tab = getColumnValue(item, ['Tabulação', 'Tabulacao', 'Assunto']) || 'Não Classificado';
+                const durRaw = getColumnValue(item, ['Tempo Atendimento', 'TempoAtendimento', 'Tempo de Atendimento']);
                 
-                // Cálculo preciso de tempo (TMA)
-                const durRaw = getColumnValue(item, ['Tempo Atendimento', 'TempoAtendimento', 'Duração']);
                 const durInSeconds = parseDurationToSeconds(durRaw);
 
                 byAgent[agent] = (byAgent[agent] || 0) + 1;
                 byStatus[status] = (byStatus[status] || 0) + 1;
-                totalSecondsAccumulated += durInSeconds;
+                
+                // Soma para o cálculo da média
+                totalSeconds += durInSeconds;
 
                 if (!agentMetrics[agent]) agentMetrics[agent] = { count: 0, uniqueTabs: new Set() };
                 agentMetrics[agent].count++;
@@ -438,12 +419,14 @@
             const uniqueAgents = Object.keys(byAgent);
             populateAgentFilter(uniqueAgents);
 
-            // Média de Tempo (TMA) calculada com base na soma total de segundos / volume de atendimentos
-            const avgSecondsPerAtendimento = data.length > 0 ? (totalSecondsAccumulated / data.length) : 0;
+            // CÁLCULO DA MÉDIA (TMA) - Divisão obrigatória pelo volume total (25 registros)
+            const avgSeconds = data.length > 0 ? (totalSeconds / data.length) : 0;
 
             document.getElementById('kpi-total').innerText = data.length;
-            // Exibição em formato relógio (HH:MM:SS) conforme solicitado
-            document.getElementById('kpi-tma').innerText = formatSecondsToClock(avgSecondsPerAtendimento);
+            
+            // Exibição do valor MÉDIO no formato HH:MM:SS
+            document.getElementById('kpi-tma').innerText = formatSecondsToClock(avgSeconds);
+            
             document.getElementById('kpi-analysts').innerText = uniqueAgents.length;
             document.getElementById('last-update').innerText = new Date().toLocaleTimeString('pt-PT');
 
@@ -471,7 +454,7 @@
                 : data.filter(item => getColumnValue(item, ['Nome Agentes', 'Agente', 'Nome Agente']) === currentFilterAgent);
 
             filteredData.forEach(item => {
-                const tab = getColumnValue(item, ['Tabulação', 'Tabulacao']) || 'Não Classificado';
+                const tab = getColumnValue(item, ['Tabulação', 'Tabulacao', 'Assunto']) || 'Não Classificado';
                 byTabulacao[tab] = (byTabulacao[tab] || 0) + 1;
             });
 
