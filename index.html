@@ -389,9 +389,9 @@
         let r, g, b;
         if (color.startsWith("#")) {
           const hex = color.replace("#", "");
-          r = parseInt(hex.length === 3 ? hex[0] : hex.substr(0, 2), 16);
-          g = parseInt(hex.length === 3 ? hex[1] : hex.substr(2, 2), 16);
-          b = parseInt(hex.length === 3 ? hex[2] : hex.substr(4, 2), 16);
+          r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substr(0, 2), 16);
+          g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substr(2, 2), 16);
+          b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substr(4, 2), 16);
         } else if (color.startsWith("rgb")) {
           const rgb = color.match(/\d+/g);
           r = parseInt(rgb[0]); g = parseInt(rgb[1]); b = parseInt(rgb[2]);
@@ -410,32 +410,40 @@
         return null;
       };
 
+      /**
+       * PARSER DE DATA CORRIGIDO
+       * Converte DD/MM/YYYY para objeto Date local garantindo precisão
+       */
       function parseDateTime(dateStr) {
         if (!dateStr) return null;
         
         const str = dateStr.toString().trim();
         
-        // Tentar parsing direto ISO
-        const isoDate = new Date(str);
-        if (!isNaN(isoDate.getTime()) && str.includes('-')) return isoDate;
-
-        // Fallback robusto para DD/MM/YYYY
-        const parts = str.split(' ');
-        const dateParts = parts[0].split('/');
-        
-        if (dateParts.length === 3) {
-           const day = parseInt(dateParts[0]);
-           const month = parseInt(dateParts[1]) - 1;
-           const year = parseInt(dateParts[2]);
+        // Formato DD/MM/YYYY HH:MM:SS ou DD/MM/YYYY
+        if (str.includes('/')) {
+           const parts = str.split(' ');
+           const dateParts = parts[0].split('/');
            
-           if (parts[1]) {
-              const timeParts = parts[1].split(':');
-              return new Date(year, month, day, parseInt(timeParts[0]), parseInt(timeParts[1]), parseInt(timeParts[2] || 0));
+           if (dateParts.length === 3) {
+              const day = parseInt(dateParts[0]);
+              const month = parseInt(dateParts[1]) - 1;
+              const year = parseInt(dateParts[2]);
+              
+              let h = 0, min = 0, s = 0;
+              if (parts[1]) {
+                 const timeParts = parts[1].split(':');
+                 h = parseInt(timeParts[0]);
+                 min = parseInt(timeParts[1]);
+                 s = parseInt(timeParts[2] || 0);
+              }
+              const finalDate = new Date(year, month, day, h, min, s);
+              return isNaN(finalDate.getTime()) ? null : finalDate;
            }
-           return new Date(year, month, day);
         }
         
-        return null;
+        // Fallback ISO (YYYY-MM-DD)
+        const isoDate = new Date(str);
+        return isNaN(isoDate.getTime()) ? null : isoDate;
       }
 
       async function fetchData() {
@@ -456,12 +464,12 @@
               const rows = results.data;
               if (rows.length < 2) return;
 
-              // TMA da célula K1 (Linha 0, Coluna 10) - Permanece como valor absoluto da fonte
+              // TMA da célula K1 (Linha 0, Coluna 10)
               const tmaRaw = rows[0][10]; 
               const tmaSeconds = parseDurationToSeconds(tmaRaw);
               document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
 
-              // Tabela (Dados começam na linha 2, cabeçalhos na linha 1)
+              // Tabela (Cabeçalho na linha 1, Dados na linha 2)
               const tableRows = rows.slice(1);
               const headers = tableRows[0];
               const dataRows = tableRows.slice(1);
@@ -502,17 +510,20 @@
           const dateStr = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data"]);
           const dateObj = parseDateTime(dateStr);
           
-          if (!dateObj) return true; 
+          // Se o filtro estiver ativo, datas inválidas ou vazias são removidas para precisão
+          if ((dateStart || dateEnd) && !dateObj) return false;
+          // Se não houver filtros, mostra tudo
+          if (!dateStart && !dateEnd) return true;
 
           if (dateStart) {
-            const start = new Date(dateStart);
-            start.setHours(0, 0, 0, 0);
+            // Comparação inclusiva a partir das 00:00:00 do dia selecionado
+            const start = new Date(dateStart + "T00:00:00");
             if (dateObj < start) return false;
           }
 
           if (dateEnd) {
-            const end = new Date(dateEnd);
-            end.setHours(23, 59, 59, 999);
+            // Comparação inclusiva até às 23:59:59 do dia selecionado
+            const end = new Date(dateEnd + "T23:59:59");
             if (dateObj > end) return false;
           }
 
