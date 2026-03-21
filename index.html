@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Real-Time - Google Sheets</title>
+    <title>Dashboard Operacional - Gymove Style</title>
     <!-- Tailwind CSS para Estilização -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js para Gráficos -->
@@ -16,147 +16,212 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .chart-container { position: relative; height: 260px; width: 100%; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
+        :root {
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+            --bg-main: #F3F4F7;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-main);
+        }
+
+        .chart-container { 
+            position: relative; 
+            height: 280px; 
+            width: 100%; 
+        }
+
+        /* Gymove Card Style */
+        .gym-card {
+            background: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+
+        .gym-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+        }
+
         .pulse-live {
             animation: pulse 2s infinite;
         }
+
         @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.5; }
+            0% { transform: scale(0.9); opacity: 0.4; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.4; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .table-row-hover:hover {
+            background-color: #F8FAFC;
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="text-slate-800">
 
-    <div class="min-h-screen p-4 md:p-8">
-        <!-- Cabeçalho -->
-        <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Dashboard Operacional</h1>
-                    <span id="status-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider transition-colors">
-                        <span id="status-dot" class="w-2 h-2 bg-slate-400 rounded-full"></span>
-                        <span id="status-text">Iniciando...</span>
-                    </span>
-                </div>
+    <div class="flex min-h-screen">
+        <!-- Sidebar Mock (Apenas Estético Gymove) -->
+        <div class="hidden lg:flex flex-col w-20 bg-white border-r border-slate-100 items-center py-8 gap-8 sticky top-0 h-screen">
+            <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
             </div>
-            
-            <div class="flex items-center gap-4">
-                <div id="protocol-warning" class="hidden flex items-center gap-2 text-amber-700 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200">
-                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
-                    <span class="text-xs font-medium">Protocolo Local Detectado</span>
-                </div>
-                
-                <div class="flex items-center gap-3 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
-                    <div class="text-right border-r pr-3 border-slate-100">
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider leading-none mb-1">Sincronizado</p>
-                        <p id="last-update" class="text-sm font-mono text-slate-700 font-medium">--:--:--</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider leading-none mb-1">Próxima</p>
-                        <p id="countdown" class="text-sm font-mono text-blue-600 font-bold">--s</p>
-                    </div>
-                    <button onclick="fetchData()" class="p-2 hover:bg-blue-50 rounded-full transition-all text-blue-600 group active:scale-95">
-                        <i data-lucide="refresh-cw" class="w-5 h-5 group-active:rotate-180 transition-transform"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Mensagem de Erro -->
-        <div id="error-container" class="hidden max-w-7xl mx-auto mb-8 bg-white border border-red-100 p-6 rounded-2xl shadow-sm text-center">
-            <div class="inline-flex p-3 bg-red-50 text-red-600 rounded-full mb-3">
-                <i data-lucide="wifi-off" class="w-6 h-6"></i>
-            </div>
-            <h2 class="text-xl font-bold text-slate-900">Falha na Ligação</h2>
-            <p id="error-description" class="text-slate-600 mt-2 max-w-2xl mx-auto text-sm">
-                Não foi possível carregar as informações da folha de cálculo.
-            </p>
+            <nav class="flex flex-col gap-6 text-slate-400">
+                <i data-lucide="pie-chart" class="w-6 h-6 hover:text-blue-500 cursor-pointer"></i>
+                <i data-lucide="users" class="w-6 h-6 hover:text-blue-500 cursor-pointer"></i>
+                <i data-lucide="calendar" class="w-6 h-6 hover:text-blue-500 cursor-pointer"></i>
+                <i data-lucide="settings" class="w-6 h-6 hover:text-blue-500 cursor-pointer"></i>
+            </nav>
         </div>
 
-        <main class="max-w-7xl mx-auto space-y-6">
-            <!-- KPI Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-blue-50 rounded-xl text-blue-600"><i data-lucide="message-square"></i></div>
-                        <span class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-full uppercase">Atendimentos</span>
-                    </div>
-                    <h3 class="text-slate-500 text-sm font-medium">Volume Total de Registos</h3>
-                    <p id="kpi-total" class="text-4xl font-bold text-slate-900 mt-1">0</p>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-purple-300 transition-colors">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-purple-50 rounded-xl text-purple-600"><i data-lucide="users"></i></div>
-                    </div>
-                    <h3 class="text-slate-500 text-sm font-medium">Equipa (Agentes Ativos)</h3>
-                    <p id="kpi-analysts" class="text-4xl font-bold text-slate-900 mt-1">0</p>
-                </div>
-            </div>
-
-            <!-- Gráficos -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Por Agente -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
-                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
-                        <i data-lucide="user-check" class="text-blue-500 w-5 h-5"></i>
-                        Volume por Agente
-                    </h3>
-                    <div class="chart-container">
-                        <canvas id="chartAnalyst"></canvas>
+        <div class="flex-1 p-4 md:p-10 max-w-[1600px] mx-auto w-full">
+            <!-- Cabeçalho de Navegação -->
+            <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Operacional</h1>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span id="status-badge" class="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-100 text-slate-500 text-[11px] font-bold uppercase tracking-widest shadow-sm">
+                            <span id="status-dot" class="w-2 h-2 bg-slate-300 rounded-full"></span>
+                            <span id="status-text">A ligar...</span>
+                        </span>
                     </div>
                 </div>
                 
-                <!-- Por Status -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
-                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
-                        <i data-lucide="activity" class="text-emerald-500 w-5 h-5"></i>
-                        Status Atual
-                    </h3>
-                    <div class="chart-container">
-                        <canvas id="chartStatus"></canvas>
+                <div class="flex items-center gap-4">
+                    <div class="bg-white p-3 md:p-4 rounded-[1.5rem] shadow-sm border border-white flex items-center gap-4">
+                        <div class="flex flex-col items-end">
+                            <p class="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Última Sinc.</p>
+                            <p id="last-update" class="text-sm font-bold text-slate-700">--:--:--</p>
+                        </div>
+                        <div class="w-px h-8 bg-slate-100"></div>
+                        <div class="flex flex-col items-start min-w-[60px]">
+                            <p class="text-[10px] text-slate-400 uppercase font-black tracking-tighter text-blue-500">Próxima</p>
+                            <p id="countdown" class="text-sm font-bold text-blue-600 tracking-widest">--s</p>
+                        </div>
+                        <button onclick="fetchData()" class="ml-2 w-10 h-10 bg-slate-50 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-all active:scale-90">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="space-y-8">
+                <!-- KPI Cards (Estilo Gymove) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="gym-card p-8 flex items-center gap-6">
+                        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="message-square" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Atendimentos</p>
+                            <h2 id="kpi-total" class="text-4xl font-black text-slate-900 mt-1">0</h2>
+                        </div>
+                    </div>
+
+                    <div class="gym-card p-8 flex items-center gap-6">
+                        <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
+                            <i data-lucide="users-2" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Agentes Ativos</p>
+                            <h2 id="kpi-analysts" class="text-4xl font-black text-slate-900 mt-1">0</h2>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Por Tabulação -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
-                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
-                        <i data-lucide="tag" class="text-purple-500 w-5 h-5"></i>
-                        Volume por Tabulação
-                    </h3>
-                    <div class="chart-container">
-                        <canvas id="chartProtocol"></canvas>
+                <!-- Gráficos Principais -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="gym-card p-8 lg:col-span-1">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-xl font-extrabold text-slate-900">Volume Agente</h3>
+                            <i data-lucide="more-horizontal" class="text-slate-300"></i>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartAnalyst"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="gym-card p-8 lg:col-span-1">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-xl font-extrabold text-slate-900">Status Atual</h3>
+                            <i data-lucide="activity" class="text-slate-300"></i>
+                        </div>
+                        <div class="chart-container flex items-center justify-center">
+                            <canvas id="chartStatus"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="gym-card p-8 lg:col-span-1">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-xl font-extrabold text-slate-900">Tabulações</h3>
+                            <i data-lucide="filter" class="text-slate-300"></i>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartProtocol"></canvas>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tabela -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
-                    <i data-lucide="layout-list" class="text-slate-500 w-5 h-5"></i>
-                    Detalhamento de Produtividade por Agente
-                </h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-100">
-                                <th class="pb-4 font-semibold text-slate-500 text-xs uppercase px-2 tracking-wider">Agente</th>
-                                <th class="pb-4 font-semibold text-slate-500 text-xs uppercase px-2 tracking-wider">Total de Contatos</th>
-                                <th class="pb-4 font-semibold text-slate-500 text-xs uppercase px-2 tracking-wider text-right">Média Contatos / Tabulação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-50">
-                            <!-- JS -->
-                        </tbody>
-                    </table>
+                <!-- Tabela de Produtividade -->
+                <div class="gym-card p-8 overflow-hidden">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-xl font-extrabold text-slate-900">Produtividade da Equipa</h3>
+                            <p class="text-xs text-slate-400 font-medium mt-1">Média de contatos distribuídos por tabulação única</p>
+                        </div>
+                        <button class="px-4 py-2 bg-slate-50 text-slate-500 rounded-xl text-xs font-bold hover:bg-slate-100 transition-colors">
+                            Exportar Relatório
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-slate-400 text-[11px] uppercase font-black tracking-[0.2em]">
+                                    <th class="pb-6 px-4">Informação do Agente</th>
+                                    <th class="pb-6 px-4">Volume Total</th>
+                                    <th class="pb-6 px-4 text-right">Média/Tabulação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="text-slate-700 font-medium">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Error Overlay -->
+    <div id="error-container" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-2xl">
+            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="wifi-off" class="w-10 h-10"></i>
             </div>
-        </main>
+            <h2 class="text-2xl font-black text-slate-900 mb-2">Sem Ligação</h2>
+            <p id="error-description" class="text-slate-500 text-sm mb-6">Não foi possível sincronizar os dados da sua base no momento.</p>
+            <button onclick="fetchData()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Tentar Novamente</button>
+        </div>
     </div>
 
     <script>
@@ -167,49 +232,34 @@
         let charts = {};
         let timeLeft = REFRESH_INTERVAL;
 
-        // Registro do plugin de rótulos de dados
         Chart.register(ChartDataLabels);
-
         lucide.createIcons();
 
-        if (window.location.protocol === 'file:') {
-            document.getElementById('protocol-warning').classList.remove('hidden');
-        }
-
+        // Contagem regressiva visual
         setInterval(() => {
             timeLeft--;
             if (timeLeft < 0) timeLeft = REFRESH_INTERVAL;
             const el = document.getElementById('countdown');
-            if (el) el.innerText = timeLeft + 's';
+            if (el) el.innerText = timeLeft.toString().padStart(2, '0') + 's';
         }, 1000);
 
-        // Função de contraste ultra-robusta
+        // Lógica de contraste YIQ para DataLabels
         function getContrastColor(color) {
             if (!color) return '#ffffff';
-            
             let r, g, b;
 
-            // Tratamento de Hexadecimal
             if (color.startsWith('#')) {
                 const hex = color.replace('#', '');
                 r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substr(0, 2), 16);
                 g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substr(2, 2), 16);
                 b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substr(4, 2), 16);
-            } 
-            // Tratamento de RGB/RGBA
-            else if (color.startsWith('rgb')) {
+            } else if (color.startsWith('rgb')) {
                 const rgb = color.match(/\d+/g);
-                r = parseInt(rgb[0]);
-                g = parseInt(rgb[1]);
-                b = parseInt(rgb[2]);
-            } 
-            else {
-                return '#ffffff';
-            }
-            
-            // Cálculo de brilho ponderado (Fórmula YIQ recomendada pelo W3C)
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            return brightness > 140 ? '#000000' : '#ffffff';
+                r = parseInt(rgb[0]); g = parseInt(rgb[1]); b = parseInt(rgb[2]);
+            } else return '#ffffff';
+
+            const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+            return yiq > 128 ? '#000000' : '#ffffff';
         }
 
         const getColumnValue = (row, possibleNames) => {
@@ -222,7 +272,6 @@
 
         async function fetchData() {
             const errorContainer = document.getElementById('error-container');
-            const errorDesc = document.getElementById('error-description');
             const badgeEl = document.getElementById('status-badge');
             const dotEl = document.getElementById('status-dot');
             const textEl = document.getElementById('status-text');
@@ -234,9 +283,7 @@
                 const csvText = await response.text();
                 
                 Papa.parse(csvText, {
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true, 
+                    header: true, dynamicTyping: true, skipEmptyLines: true,
                     complete: function(results) {
                         if (results.data && results.data.length > 0) {
                             const cleanData = results.data.filter(row => {
@@ -248,20 +295,18 @@
                             processData(cleanData);
                             timeLeft = REFRESH_INTERVAL;
                             errorContainer.classList.add('hidden');
-                            badgeEl.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider transition-colors";
-                            dotEl.className = "w-2 h-2 bg-emerald-500 rounded-full pulse-live";
-                            textEl.innerText = "Conectado";
-                        } else {
-                            throw new Error("Sem dados na planilha");
+                            
+                            badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
+                            dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
+                            textEl.innerText = "Ligado";
                         }
                     }
                 });
             } catch (error) {
                 errorContainer.classList.remove('hidden');
-                errorDesc.innerText = error.message;
-                badgeEl.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wider transition-colors";
-                dotEl.className = "w-2 h-2 bg-red-500 rounded-full";
-                textEl.innerText = "Erro";
+                badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
+                dotEl.className = "w-2.5 h-2.5 bg-red-500 rounded-full";
+                textEl.innerText = "Offline";
             }
         }
 
@@ -272,139 +317,120 @@
             const agentMetrics = {};
 
             data.forEach(item => {
-                const agent = getColumnValue(item, ['Nome Agentes', 'Agente', 'Nome Agente']) || 'Não Identificado';
-                const status = getColumnValue(item, ['Status']) || 'N/A';
-                const tab = getColumnValue(item, ['Tabulação', 'Tabulacao']) || 'Sem Tabulação';
+                const agent = getColumnValue(item, ['Nome Agentes', 'Agente', 'Nome Agente']) || 'Anónimo';
+                const status = getColumnValue(item, ['Status']) || 'Desconhecido';
+                const tab = getColumnValue(item, ['Tabulação', 'Tabulacao']) || 'Não Classificado';
 
                 byAgent[agent] = (byAgent[agent] || 0) + 1;
                 byStatus[status] = (byStatus[status] || 0) + 1;
                 byTabulacao[tab] = (byTabulacao[tab] || 0) + 1;
 
-                if (!agentMetrics[agent]) {
-                    agentMetrics[agent] = { count: 0, uniqueTabs: new Set() };
-                }
+                if (!agentMetrics[agent]) agentMetrics[agent] = { count: 0, uniqueTabs: new Set() };
                 agentMetrics[agent].count++;
                 agentMetrics[agent].uniqueTabs.add(tab);
             });
 
             document.getElementById('kpi-total').innerText = data.length;
             document.getElementById('kpi-analysts').innerText = Object.keys(byAgent).length;
-            
-            const lastUpdateEl = document.getElementById('last-update');
-            if (lastUpdateEl) lastUpdateEl.innerText = new Date().toLocaleTimeString('pt-BR');
+            document.getElementById('last-update').innerText = new Date().toLocaleTimeString('pt-PT');
 
             updateCharts(byAgent, byStatus, byTabulacao);
             updateTable(agentMetrics);
         }
 
         function updateCharts(byAgent, byStatus, byTabulacao) {
-            // Volume por Agente
+            // Volume Agente
             renderChart('chartAnalyst', 'bar', {
                 labels: Object.keys(byAgent),
-                datasets: [{ label: 'Contatos', data: Object.values(byAgent), backgroundColor: '#3b82f6', borderRadius: 4 }]
-            }, { plugins: { legend: { display: false } } });
+                datasets: [{ 
+                    data: Object.values(byAgent), 
+                    backgroundColor: '#3b82f6', 
+                    borderRadius: 12,
+                    barThickness: 30
+                }]
+            });
 
             // Status
             renderChart('chartStatus', 'doughnut', {
                 labels: Object.keys(byStatus),
                 datasets: [{ 
                     data: Object.values(byStatus), 
-                    backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#8b5cf6', '#64748b'], 
-                    borderWidth: 0 
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+                    borderWidth: 0,
+                    hoverOffset: 20
                 }]
-            }, { cutout: '65%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } });
+            }, { cutout: '75%' });
 
-            // Por Tabulação (Ordenado Decrescente)
-            const sortedProtocol = Object.entries(byTabulacao)
-                .sort((a, b) => b[1] - a[1]);
-            
+            // Tabulações (Ordenado)
+            const sortedTabs = Object.entries(byTabulacao).sort((a,b) => b[1] - a[1]).slice(0, 10);
             renderChart('chartProtocol', 'bar', {
-                labels: sortedProtocol.map(item => item[0]),
+                labels: sortedTabs.map(s => s[0]),
                 datasets: [{ 
-                    label: 'Qtd', 
-                    data: sortedProtocol.map(item => item[1]), 
+                    data: sortedTabs.map(s => s[1]), 
                     backgroundColor: '#8b5cf6', 
-                    borderRadius: 4 
+                    borderRadius: 8,
+                    barThickness: 20
                 }]
-            }, { indexAxis: 'y', plugins: { legend: { display: false } } });
+            }, { indexAxis: 'y' });
         }
 
-        function renderChart(id, type, data, extraOptions = {}) {
+        function renderChart(id, type, data, options = {}) {
             const canvas = document.getElementById(id);
             if (!canvas) return;
             if (charts[id]) charts[id].destroy();
-            const ctx = canvas.getContext('2d');
             
-            charts[id] = new Chart(ctx, {
+            charts[id] = new Chart(canvas.getContext('2d'), {
                 type: type,
                 data: data,
-                options: { 
-                    responsive: true, 
+                options: {
+                    responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: { top: 10, right: 30, left: 10, bottom: 10 }
-                    },
                     plugins: {
-                        ...extraOptions.plugins,
+                        legend: { display: type === 'doughnut', position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: 'bold' } } },
                         datalabels: {
                             display: true,
-                            color: function(context) {
-                                // Resolve a cor de fundo do elemento específico
-                                const bgColor = context.dataset.backgroundColor;
-                                const color = Array.isArray(bgColor) ? bgColor[context.dataIndex] : bgColor;
-                                return getContrastColor(color);
-                            },
-                            font: { 
-                                weight: 'bold', 
-                                size: 11,
-                                family: "'Inter', sans-serif"
-                            },
+                            color: (ctx) => getContrastColor(ctx.dataset.backgroundColor[ctx.dataIndex] || ctx.dataset.backgroundColor),
+                            font: { weight: '800', size: 11 },
                             anchor: 'center',
                             align: 'center',
-                            formatter: (value) => value > 0 ? value : ''
+                            formatter: Math.round
                         }
                     },
-                    scales: type === 'bar' ? { 
-                        y: { 
-                            grid: { color: '#f1f5f9' }, 
-                            ticks: { font: { size: 10 } } 
-                        },
-                        x: { 
-                            grid: { display: false }, 
-                            ticks: { font: { size: 10 } } 
-                        }
+                    scales: type === 'bar' ? {
+                        y: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 } } },
+                        x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 } } }
                     } : {},
-                    ...extraOptions 
+                    ...options
                 }
             });
         }
 
         function updateTable(metrics) {
             const tbody = document.getElementById('table-body');
-            if (!tbody) return;
             tbody.innerHTML = '';
-
-            Object.keys(metrics)
-                .sort((a,b) => metrics[b].count - metrics[a].count)
-                .forEach(name => {
-                    const count = metrics[name].count;
-                    const numTabs = metrics[name].uniqueTabs.size;
-                    const contactsPerTab = numTabs > 0 ? (count / numTabs).toFixed(2) : 0;
-                    
-                    const row = `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-4 px-2 font-medium text-slate-700 text-sm">${name}</td>
-                            <td class="py-4 px-2 text-slate-500 text-sm font-semibold">${count}</td>
-                            <td class="py-4 px-2 text-right">
-                                <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold tracking-tight">
-                                    ${contactsPerTab} cont./tab.
-                                </span>
-                            </td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                });
-            lucide.createIcons();
+            Object.keys(metrics).sort((a,b) => metrics[b].count - metrics[a].count).forEach(name => {
+                const count = metrics[name].count;
+                const numTabs = metrics[name].uniqueTabs.size;
+                const avg = numTabs > 0 ? (count / numTabs).toFixed(2) : 0;
+                
+                tbody.innerHTML += `
+                    <tr class="table-row-hover transition-colors">
+                        <td class="py-5 px-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 font-bold text-xs">
+                                    ${name.substring(0,2).toUpperCase()}
+                                </div>
+                                <span class="font-bold text-slate-700">${name}</span>
+                            </div>
+                        </td>
+                        <td class="py-5 px-4 font-black text-blue-600">${count}</td>
+                        <td class="py-5 px-4 text-right">
+                            <span class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl text-[11px] font-black border border-blue-100">
+                                ${avg} <span class="opacity-50">TAB</span>
+                            </span>
+                        </td>
+                    </tr>`;
+            });
         }
 
         fetchData();
