@@ -82,6 +82,15 @@
             color: #3b82f6;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
         }
+
+        /* Select styling override */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1em;
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -193,7 +202,10 @@
                     <div class="gym-card p-8 lg:col-span-1">
                         <div class="flex items-center justify-between mb-8">
                             <h3 class="text-xl font-extrabold text-slate-900">Tabulações</h3>
-                            <i data-lucide="filter" class="text-slate-300"></i>
+                            <!-- Filtro de Agente para Tabulações -->
+                            <select id="agent-filter" onchange="handleAgentFilterChange()" class="bg-slate-50 border-none text-[10px] font-black uppercase text-slate-500 rounded-xl px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                                <option value="Geral">Geral</option>
+                            </select>
                         </div>
                         <div class="chart-container">
                             <canvas id="chartProtocol"></canvas>
@@ -251,6 +263,8 @@
         
         let charts = {};
         let timeLeft = REFRESH_INTERVAL;
+        let globalCleanData = []; // Armazena os dados limpos para filtragem local
+        let currentFilterAgent = "Geral";
 
         Chart.register(ChartDataLabels);
         lucide.createIcons();
@@ -263,11 +277,9 @@
             if (el) el.innerText = timeLeft.toString().padStart(2, '0') + 's';
         }, 1000);
 
-        // Lógica de contraste YIQ para DataLabels
         function getContrastColor(color) {
             if (!color) return '#ffffff';
             let r, g, b;
-
             if (color.startsWith('#')) {
                 const hex = color.replace('#', '');
                 r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substr(0, 2), 16);
@@ -277,7 +289,6 @@
                 const rgb = color.match(/\d+/g);
                 r = parseInt(rgb[0]); g = parseInt(rgb[1]); b = parseInt(rgb[2]);
             } else return '#ffffff';
-
             const yiq = (r * 299 + g * 587 + b * 114) / 1000;
             return yiq > 128 ? '#000000' : '#ffffff';
         }
@@ -312,28 +323,61 @@
                                 return agent && agent.toString().trim() !== "" && atendimento;
                             });
 
+                            globalCleanData = cleanData;
                             processData(cleanData);
                             timeLeft = REFRESH_INTERVAL;
                             errorContainer.classList.add('hidden');
                             
                             badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
-                            dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
-                            textEl.innerText = "Ligado";
+                            if (dotEl) {
+                                dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
+                            }
+                            if (textEl) {
+                                textEl.innerText = "Ligado";
+                            }
                         }
                     }
                 });
             } catch (error) {
+                console.error("Erro na busca de dados:", error);
                 errorContainer.classList.remove('hidden');
                 badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
-                dotEl.className = "w-2.5 h-2.5 bg-red-500 rounded-full";
-                textEl.innerText = "Offline";
+                if (dotEl) {
+                    dotEl.className = "w-2.5 h-2.5 bg-red-500 rounded-full";
+                }
+                if (textEl) {
+                    textEl.innerText = "Offline";
+                }
             }
+        }
+
+        function populateAgentFilter(agents) {
+            const select = document.getElementById('agent-filter');
+            const currentVal = select.value;
+            
+            // Limpa opções excepto a primeira
+            while (select.options.length > 1) select.remove(1);
+            
+            agents.sort().forEach(agent => {
+                const opt = document.createElement('option');
+                opt.value = agent;
+                opt.innerHTML = agent;
+                select.appendChild(opt);
+            });
+            
+            // Mantém selecção se ainda existir
+            if (agents.includes(currentVal)) select.value = currentVal;
+            else select.value = "Geral";
+        }
+
+        function handleAgentFilterChange() {
+            currentFilterAgent = document.getElementById('agent-filter').value;
+            updateTabulacaoChart(globalCleanData);
         }
 
         function processData(data) {
             const byAgent = {};
             const byStatus = {};
-            const byTabulacao = {};
             const agentMetrics = {};
 
             data.forEach(item => {
@@ -343,22 +387,25 @@
 
                 byAgent[agent] = (byAgent[agent] || 0) + 1;
                 byStatus[status] = (byStatus[status] || 0) + 1;
-                byTabulacao[tab] = (byTabulacao[tab] || 0) + 1;
 
                 if (!agentMetrics[agent]) agentMetrics[agent] = { count: 0, uniqueTabs: new Set() };
                 agentMetrics[agent].count++;
                 agentMetrics[agent].uniqueTabs.add(tab);
             });
 
+            const uniqueAgents = Object.keys(byAgent);
+            populateAgentFilter(uniqueAgents);
+
             document.getElementById('kpi-total').innerText = data.length;
-            document.getElementById('kpi-analysts').innerText = Object.keys(byAgent).length;
+            document.getElementById('kpi-analysts').innerText = uniqueAgents.length;
             document.getElementById('last-update').innerText = new Date().toLocaleTimeString('pt-PT');
 
-            updateCharts(byAgent, byStatus, byTabulacao);
+            updateCharts(byAgent, byStatus);
+            updateTabulacaoChart(data); // Chama o gráfico de tabulação separado para suportar o filtro
             updateTable(agentMetrics);
         }
 
-        function updateCharts(byAgent, byStatus, byTabulacao) {
+        function updateCharts(byAgent, byStatus) {
             // Volume Agente
             renderChart('chartAnalyst', 'bar', {
                 labels: Object.keys(byAgent),
@@ -380,9 +427,23 @@
                     hoverOffset: 20
                 }]
             }, { cutout: '75%' });
+        }
 
-            // Tabulações (Ordenado)
+        function updateTabulacaoChart(data) {
+            const byTabulacao = {};
+            
+            // Aplica filtro se não for Geral
+            const filteredData = currentFilterAgent === "Geral" 
+                ? data 
+                : data.filter(item => getColumnValue(item, ['Nome Agentes', 'Agente', 'Nome Agente']) === currentFilterAgent);
+
+            filteredData.forEach(item => {
+                const tab = getColumnValue(item, ['Tabulação', 'Tabulacao']) || 'Não Classificado';
+                byTabulacao[tab] = (byTabulacao[tab] || 0) + 1;
+            });
+
             const sortedTabs = Object.entries(byTabulacao).sort((a,b) => b[1] - a[1]).slice(0, 10);
+            
             renderChart('chartProtocol', 'bar', {
                 labels: sortedTabs.map(s => s[0]),
                 datasets: [{ 
