@@ -54,34 +54,16 @@
       }
 
       @keyframes pulse {
-        0% {
-          transform: scale(0.9);
-          opacity: 0.4;
-        }
-        50% {
-          transform: scale(1.1);
-          opacity: 1;
-        }
-        100% {
-          transform: scale(0.9);
-          opacity: 0.4;
-        }
+        0% { transform: scale(0.9); opacity: 0.4; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(0.9); opacity: 0.4; }
       }
 
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
-      }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-      .table-row-hover:hover {
-        background-color: #f8fafc;
-      }
+      .table-row-hover:hover { background-color: #f8fafc; }
 
       .nav-item-active {
         background-color: #eff6ff;
@@ -89,8 +71,7 @@
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
       }
 
-      select,
-      input[type="date"] {
+      select, input[type="date"] {
         appearance: none;
         outline: none;
       }
@@ -106,80 +87,45 @@
   <body class="text-slate-800">
     <div class="flex min-h-screen">
       <!-- Sidebar -->
-      <div
-        class="hidden lg:flex flex-col w-24 bg-white border-r border-slate-100 items-center py-8 gap-10 sticky top-0 h-screen z-40"
-      >
-        <div
-          class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 cursor-pointer mb-4"
-        >
+      <div class="hidden lg:flex flex-col w-24 bg-white border-r border-slate-100 items-center py-8 gap-10 sticky top-0 h-screen z-40">
+        <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 cursor-pointer mb-4">
           <i data-lucide="activity" class="w-6 h-6"></i>
         </div>
         <nav class="flex flex-col gap-8 text-slate-400">
-          <div
-            class="nav-item-active p-3.5 rounded-2xl cursor-pointer transition-all group"
-            title="Dashboard Operacional"
-          >
+          <div class="nav-item-active p-3.5 rounded-2xl cursor-pointer transition-all group" title="Dashboard Operacional">
             <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
           </div>
-          <div
-            class="p-3.5 hover:bg-slate-50 hover:text-slate-600 rounded-2xl cursor-pointer transition-all"
-            title="Visão de Vendas"
-          >
+          <div class="p-3.5 hover:bg-slate-50 hover:text-slate-600 rounded-2xl cursor-pointer transition-all" title="Visão de Vendas">
             <i data-lucide="shopping-cart" class="w-6 h-6"></i>
           </div>
         </nav>
         <div class="mt-auto text-slate-300">
-          <button
-            onclick="toggleSettingsModal()"
-            class="p-2 hover:bg-slate-50 hover:text-slate-600 rounded-2xl transition-all"
-          >
+          <button onclick="toggleSettingsModal()" class="p-2 hover:bg-slate-50 hover:text-slate-600 rounded-2xl transition-all">
             <i data-lucide="settings" class="w-6 h-6"></i>
           </button>
         </div>
       </div>
 
       <div class="flex-1 p-4 md:p-10 max-w-[1600px] mx-auto w-full">
-        <header
-          class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8"
-        >
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
-            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
-              Dashboard Operacional
-            </h1>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Operacional</h1>
             <div class="flex items-center gap-3 mt-2">
-              <span
-                id="status-badge"
-                class="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-100 text-slate-500 text-[11px] font-bold uppercase tracking-widest shadow-sm"
-              >
-                <span
-                  id="status-dot"
-                  class="w-2 h-2 bg-slate-300 rounded-full"
-                ></span>
+              <span id="status-badge" class="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-100 text-slate-500 text-[11px] font-bold uppercase tracking-widest shadow-sm">
+                <span id="status-dot" class="w-2 h-2 bg-slate-300 rounded-full"></span>
                 <span id="status-text">A ligar...</span>
               </span>
             </div>
           </div>
 
           <div class="flex items-center gap-4">
-            <div
-              class="bg-white p-3 md:p-4 rounded-[1.5rem] shadow-sm border border-white flex items-center gap-4"
-            >
+            <div class="bg-white p-3 md:p-4 rounded-[1.5rem] shadow-sm border border-white flex items-center gap-4">
               <div class="flex flex-col items-end">
-                <p
-                  class="text-[10px] text-slate-400 uppercase font-black tracking-tighter"
-                >
-                  Última Sinc.
-                </p>
-                <p id="last-update" class="text-sm font-bold text-slate-700">
-                  --:--:--
-                </p>
+                <p class="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Última Sinc.</p>
+                <p id="last-update" class="text-sm font-bold text-slate-700">--:--:--</p>
               </div>
               <div class="w-px h-8 bg-slate-100"></div>
-              <button
-                onclick="manualRefresh()"
-                class="w-10 h-10 bg-slate-50 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-all active:scale-90"
-                title="Atualizar agora"
-              >
+              <button onclick="manualRefresh()" class="w-10 h-10 bg-slate-50 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-all active:scale-90" title="Atualizar agora">
                 <i data-lucide="refresh-cw" class="w-5 h-5"></i>
               </button>
             </div>
@@ -187,112 +133,53 @@
         </header>
 
         <!-- Filtros de Tempo Real -->
-        <section
-          class="mb-8 flex flex-wrap items-end gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm"
-        >
-          <div class="flex flex-col gap-2">
-            <label
-              class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1"
-              >Data Início</label
-            >
-            <input
-              type="date"
-              id="date-start"
-              onchange="updateFilterStorage()"
-              class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer"
-            />
-          </div>
+        <section class="mb-8 flex flex-wrap items-end gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+           <div class="flex flex-col gap-2">
+             <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Início</label>
+             <input type="date" id="date-start" onchange="updateFilterStorage()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+           </div>
 
-          <div class="flex flex-col gap-2">
-            <label
-              class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1"
-              >Data Fim</label
-            >
-            <input
-              type="date"
-              id="date-end"
-              onchange="updateFilterStorage()"
-              class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer"
-            />
-          </div>
+           <div class="flex flex-col gap-2">
+             <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Fim</label>
+             <input type="date" id="date-end" onchange="updateFilterStorage()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+           </div>
 
-          <button
-            onclick="resetFilters()"
-            class="p-3 text-slate-400 hover:text-blue-600 transition-colors"
-            title="Limpar Filtros"
-          >
-            <i data-lucide="filter-x" class="w-5 h-5"></i>
-          </button>
-          <p
-            class="text-[10px] text-slate-300 font-bold uppercase tracking-tight mb-2.5"
-          >
-            Baseado em Fim Atendimento
-          </p>
+           <button onclick="resetFilters()" class="p-3 text-slate-400 hover:text-blue-600 transition-colors" title="Limpar Filtros">
+             <i data-lucide="filter-x" class="w-5 h-5"></i>
+           </button>
+           <p class="text-[10px] text-slate-300 font-bold uppercase tracking-tight mb-2.5">Baseado em Fim Atendimento</p>
         </section>
 
         <main class="space-y-8">
           <!-- KPI Cards -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="gym-card p-8 flex items-center gap-6">
-              <div
-                class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center"
-              >
+              <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
                 <i data-lucide="message-square" class="w-8 h-8"></i>
               </div>
               <div>
-                <p
-                  class="text-sm font-bold text-slate-400 uppercase tracking-widest"
-                >
-                  Atendimentos
-                </p>
-                <h2
-                  id="kpi-total"
-                  class="text-4xl font-black text-slate-900 mt-1"
-                >
-                  0
-                </h2>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Atendimentos</p>
+                <h2 id="kpi-total" class="text-4xl font-black text-slate-900 mt-1">0</h2>
               </div>
             </div>
 
             <div class="gym-card p-8 flex items-center gap-6">
-              <div
-                class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center"
-              >
+              <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
                 <i data-lucide="clock" class="w-8 h-8"></i>
               </div>
               <div>
-                <p
-                  class="text-sm font-bold text-slate-400 uppercase tracking-widest"
-                >
-                  TMA
-                </p>
-                <h2
-                  id="kpi-tma"
-                  class="text-4xl font-black text-slate-900 mt-1"
-                >
-                  00:00:00
-                </h2>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">TMA</p>
+                <h2 id="kpi-tma" class="text-4xl font-black text-slate-900 mt-1">00:00:00</h2>
               </div>
             </div>
 
             <div class="gym-card p-8 flex items-center gap-6">
-              <div
-                class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center"
-              >
+              <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
                 <i data-lucide="users-2" class="w-8 h-8"></i>
               </div>
               <div>
-                <p
-                  class="text-sm font-bold text-slate-400 uppercase tracking-widest"
-                >
-                  Agentes Ativos
-                </p>
-                <h2
-                  id="kpi-analysts"
-                  class="text-4xl font-black text-slate-900 mt-1"
-                >
-                  0
-                </h2>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Agentes Ativos</p>
+                <h2 id="kpi-analysts" class="text-4xl font-black text-slate-900 mt-1">0</h2>
               </div>
             </div>
           </div>
@@ -300,9 +187,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="gym-card p-8 lg:col-span-1">
               <div class="flex items-center justify-between mb-8">
-                <h3 class="text-xl font-extrabold text-slate-900">
-                  Volume Agente
-                </h3>
+                <h3 class="text-xl font-extrabold text-slate-900">Volume Agente</h3>
                 <i data-lucide="more-horizontal" class="text-slate-300"></i>
               </div>
               <div class="chart-container">
@@ -312,9 +197,7 @@
 
             <div class="gym-card p-8 lg:col-span-1">
               <div class="flex items-center justify-between mb-8">
-                <h3 class="text-xl font-extrabold text-slate-900">
-                  Status Total
-                </h3>
+                <h3 class="text-xl font-extrabold text-slate-900">Status Total</h3>
                 <i data-lucide="activity" class="text-slate-300"></i>
               </div>
               <div class="chart-container flex items-center justify-center">
@@ -324,14 +207,8 @@
 
             <div class="gym-card p-8 lg:col-span-1">
               <div class="flex items-center justify-between mb-8">
-                <h3 class="text-xl font-extrabold text-slate-900">
-                  Tabulações
-                </h3>
-                <select
-                  id="agent-filter"
-                  onchange="handleAgentFilterChange()"
-                  class="filter-select bg-slate-50 border-none text-[10px] font-black uppercase text-slate-500 rounded-xl px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
-                >
+                <h3 class="text-xl font-extrabold text-slate-900">Tabulações</h3>
+                <select id="agent-filter" onchange="handleAgentFilterChange()" class="filter-select bg-slate-50 border-none text-[10px] font-black uppercase text-slate-500 rounded-xl px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
                   <option value="Geral">Geral</option>
                 </select>
               </div>
@@ -344,29 +221,20 @@
           <div class="gym-card p-8 overflow-hidden">
             <div class="flex items-center justify-between mb-8">
               <div>
-                <h3 class="text-xl font-extrabold text-slate-900">
-                  Produtividade da Equipa
-                </h3>
-                <p class="text-xs text-slate-400 font-medium mt-1">
-                  Média de contactos distribuídos por tabulação única
-                </p>
+                <h3 class="text-xl font-extrabold text-slate-900">Produtividade da Equipa</h3>
+                <p class="text-xs text-slate-400 font-medium mt-1">Média de contactos distribuídos por tabulação única</p>
               </div>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left">
                 <thead>
-                  <tr
-                    class="text-slate-400 text-[11px] uppercase font-black tracking-[0.2em]"
-                  >
+                  <tr class="text-slate-400 text-[11px] uppercase font-black tracking-[0.2em]">
                     <th class="pb-6 px-4">Informação do Agente</th>
                     <th class="pb-6 px-4">Volume Total</th>
                     <th class="pb-6 px-4 text-right">Média/Tabulação</th>
                   </tr>
                 </thead>
-                <tbody
-                  id="table-body"
-                  class="text-slate-700 font-medium"
-                ></tbody>
+                <tbody id="table-body" class="text-slate-700 font-medium"></tbody>
               </table>
             </div>
           </div>
@@ -375,100 +243,59 @@
     </div>
 
     <!-- Modal de Configurações -->
-    <div
-      id="settings-modal"
-      class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
-    >
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white rounded-[2rem] p-8 max-sm w-full shadow-2xl">
         <div class="flex items-center gap-4 mb-6">
-          <div
-            class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"
-          >
+          <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
             <i data-lucide="settings" class="w-6 h-6"></i>
           </div>
           <div>
             <h2 class="text-xl font-black text-slate-900">Configurações</h2>
-            <p
-              class="text-xs text-slate-400 font-bold uppercase tracking-wider"
-            >
-              Painel de Controlo
-            </p>
+            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Painel de Controlo</p>
           </div>
         </div>
-
+        
         <div class="space-y-6">
           <div>
-            <label
-              class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2"
-              >Tempo de Atualização (Segundos)</label
-            >
+            <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Tempo de Atualização (Segundos)</label>
             <div class="relative">
-              <input
-                id="refresh-input"
-                type="number"
-                min="1"
-                max="300"
+              <input 
+                id="refresh-input" 
+                type="number" 
+                min="1" 
+                max="300" 
                 class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold text-slate-700 focus:border-blue-500 focus:ring-0 transition-all outline-none"
-              />
-              <span
-                class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold"
-                >s</span
               >
+              <span class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold">s</span>
             </div>
           </div>
 
           <div class="flex gap-3">
-            <button
-              onclick="toggleSettingsModal()"
-              class="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold hover:bg-slate-100 transition-all"
-            >
-              Cancelar
-            </button>
-            <button
-              onclick="saveSettings()"
-              class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all"
-            >
-              Guardar
-            </button>
+            <button onclick="toggleSettingsModal()" class="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold hover:bg-slate-100 transition-all">Cancelar</button>
+            <button onclick="saveSettings()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Guardar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div
-      id="error-container"
-      class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-2xl"
-      >
-        <div
-          class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"
-        >
+    <div id="error-container" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-2xl">
+        <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
           <i data-lucide="wifi-off" class="w-10 h-10"></i>
         </div>
         <h2 class="text-2xl font-black text-slate-900 mb-2">Sem Ligação</h2>
-        <p id="error-description" class="text-slate-500 text-sm mb-6">
-          Não foi possível sincronizar os dados.
-        </p>
-        <button
-          onclick="manualRefresh()"
-          class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all"
-        >
-          Tentar Novamente
-        </button>
+        <p id="error-description" class="text-slate-500 text-sm mb-6">Não foi possível sincronizar os dados.</p>
+        <button onclick="manualRefresh()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Tentar Novamente</button>
       </div>
     </div>
 
     <script>
-      const SHEET_URL =
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
-      let REFRESH_INTERVAL =
-        parseInt(localStorage.getItem("dash_refresh_interval")) || 5;
+      const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
+      let REFRESH_INTERVAL = parseInt(localStorage.getItem('dash_refresh_interval')) || 5;
 
       let charts = {};
-      let globalTableData = [];
-      let currentFilteredData = [];
+      let globalTableData = []; 
+      let currentFilteredData = []; 
       let currentFilterAgent = "Geral";
       let refreshTimer = null;
 
@@ -477,38 +304,37 @@
 
       // Inicializar campos de data a partir do localStorage
       window.onload = () => {
-        const savedStart = localStorage.getItem("dash_filter_start");
-        const savedEnd = localStorage.getItem("dash_filter_end");
-        if (savedStart)
-          document.getElementById("date-start").value = savedStart;
-        if (savedEnd) document.getElementById("date-end").value = savedEnd;
+        const savedStart = localStorage.getItem('dash_filter_start');
+        const savedEnd = localStorage.getItem('dash_filter_end');
+        if (savedStart) document.getElementById('date-start').value = savedStart;
+        if (savedEnd) document.getElementById('date-end').value = savedEnd;
       };
 
       function updateFilterStorage() {
-        const start = document.getElementById("date-start").value;
-        const end = document.getElementById("date-end").value;
-        localStorage.setItem("dash_filter_start", start);
-        localStorage.setItem("dash_filter_end", end);
+        const start = document.getElementById('date-start').value;
+        const end = document.getElementById('date-end').value;
+        localStorage.setItem('dash_filter_start', start);
+        localStorage.setItem('dash_filter_end', end);
         applyFilters();
       }
 
       function toggleSettingsModal() {
-        const modal = document.getElementById("settings-modal");
-        const input = document.getElementById("refresh-input");
-        if (modal.classList.contains("hidden")) {
+        const modal = document.getElementById('settings-modal');
+        const input = document.getElementById('refresh-input');
+        if (modal.classList.contains('hidden')) {
           input.value = REFRESH_INTERVAL;
-          modal.classList.remove("hidden");
+          modal.classList.remove('hidden');
         } else {
-          modal.classList.add("hidden");
+          modal.classList.add('hidden');
         }
       }
 
       function saveSettings() {
-        const input = document.getElementById("refresh-input");
+        const input = document.getElementById('refresh-input');
         const newValue = parseInt(input.value);
         if (newValue && newValue >= 1) {
           REFRESH_INTERVAL = newValue;
-          localStorage.setItem("dash_refresh_interval", newValue);
+          localStorage.setItem('dash_refresh_interval', newValue);
           startAutoRefresh();
           toggleSettingsModal();
         }
@@ -525,10 +351,10 @@
       }
 
       function resetFilters() {
-        document.getElementById("date-start").value = "";
-        document.getElementById("date-end").value = "";
-        localStorage.removeItem("dash_filter_start");
-        localStorage.removeItem("dash_filter_end");
+        document.getElementById('date-start').value = '';
+        document.getElementById('date-end').value = '';
+        localStorage.removeItem('dash_filter_start');
+        localStorage.removeItem('dash_filter_end');
         applyFilters();
       }
 
@@ -538,8 +364,7 @@
         const str = val.toString().trim();
         if (str.includes(":")) {
           const parts = str.split(":").map((p) => parseFloat(p) || 0);
-          if (parts.length === 3)
-            return parts[0] * 3600 + parts[1] * 60 + parts[2];
+          if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
           if (parts.length === 2) return parts[0] * 60 + parts[1];
         }
         const num = parseFloat(str);
@@ -564,23 +389,12 @@
         let r, g, b;
         if (color.startsWith("#")) {
           const hex = color.replace("#", "");
-          r = parseInt(
-            hex.length === 3 ? hex[0] + hex[0] : hex.substr(0, 2),
-            16,
-          );
-          g = parseInt(
-            hex.length === 3 ? hex[1] + hex[1] : hex.substr(2, 2),
-            16,
-          );
-          b = parseInt(
-            hex.length === 3 ? hex[2] + hex[2] : hex.substr(4, 2),
-            16,
-          );
+          r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substr(0, 2), 16);
+          g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substr(2, 2), 16);
+          b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substr(4, 2), 16);
         } else if (color.startsWith("rgb")) {
           const rgb = color.match(/\d+/g);
-          r = parseInt(rgb[0]);
-          g = parseInt(rgb[1]);
-          b = parseInt(rgb[2]);
+          r = parseInt(rgb[0]); g = parseInt(rgb[1]); b = parseInt(rgb[2]);
         } else return "#ffffff";
         const yiq = (r * 299 + g * 587 + b * 114) / 1000;
         return yiq > 128 ? "#000000" : "#ffffff";
@@ -589,7 +403,7 @@
       const getColumnValue = (row, possibleNames) => {
         for (let name of possibleNames) {
           const key = Object.keys(row).find(
-            (k) => k.trim().toLowerCase() === name.toLowerCase(),
+            (k) => k.trim().toLowerCase() === name.toLowerCase()
           );
           if (key !== undefined) return row[key];
         }
@@ -598,32 +412,30 @@
 
       function parseDateTime(dateStr) {
         if (!dateStr) return null;
-
+        
         const str = dateStr.toString().trim();
-
-        if (str.includes("/")) {
-          const parts = str.split(" ");
-          const dateParts = parts[0].split("/");
-
-          if (dateParts.length === 3) {
-            const day = parseInt(dateParts[0]);
-            const month = parseInt(dateParts[1]) - 1;
-            const year = parseInt(dateParts[2]);
-
-            let h = 0,
-              min = 0,
-              s = 0;
-            if (parts[1]) {
-              const timeParts = parts[1].split(":");
-              h = parseInt(timeParts[0]);
-              min = parseInt(timeParts[1]);
-              s = parseInt(timeParts[2] || 0);
-            }
-            const finalDate = new Date(year, month, day, h, min, s);
-            return isNaN(finalDate.getTime()) ? null : finalDate;
-          }
+        
+        if (str.includes('/')) {
+           const parts = str.split(' ');
+           const dateParts = parts[0].split('/');
+           
+           if (dateParts.length === 3) {
+              const day = parseInt(dateParts[0]);
+              const month = parseInt(dateParts[1]) - 1;
+              const year = parseInt(dateParts[2]);
+              
+              let h = 0, min = 0, s = 0;
+              if (parts[1]) {
+                 const timeParts = parts[1].split(':');
+                 h = parseInt(timeParts[0]);
+                 min = parseInt(timeParts[1]);
+                 s = parseInt(timeParts[2] || 0);
+              }
+              const finalDate = new Date(year, month, day, h, min, s);
+              return isNaN(finalDate.getTime()) ? null : finalDate;
+           }
         }
-
+        
         const isoDate = new Date(str);
         return isNaN(isoDate.getTime()) ? null : isoDate;
       }
@@ -635,10 +447,7 @@
 
         try {
           const urlWithTime = `${SHEET_URL}${SHEET_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
-          const response = await fetch(urlWithTime, {
-            mode: "cors",
-            cache: "no-store",
-          });
+          const response = await fetch(urlWithTime, { mode: "cors", cache: "no-store" });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const csvText = await response.text();
 
@@ -647,65 +456,48 @@
             skipEmptyLines: true,
             complete: function (results) {
               const rows = results.data;
-              if (rows.length < 2) return;
+              if (rows.length < 1) return;
 
-              // Tabela (Cabeçalho na linha 1, Dados na linha 2)
-              const tableRows = rows.slice(1);
-              const headers = tableRows[0];
-              const dataRows = tableRows.slice(1);
+              // Como a primeira linha foi deletada, a tabela (cabeçalho) agora começa em rows[0]
+              const headers = rows[0];
+              const dataRows = rows.slice(1);
 
-              globalTableData = dataRows
-                .map((row) => {
-                  let obj = {};
-                  headers.forEach((h, i) => {
-                    if (h) obj[h.trim()] = row[i];
-                  });
-                  return obj;
-                })
-                .filter((item) => {
-                  const agent = getColumnValue(item, [
-                    "Nome Agentes",
-                    "Agente",
-                    "Nome Agente",
-                  ]);
-                  return agent && agent.toString().trim() !== "";
+              globalTableData = dataRows.map(row => {
+                let obj = {};
+                headers.forEach((h, i) => {
+                  if (h) obj[h.trim()] = row[i];
                 });
+                return obj;
+              }).filter(item => {
+                const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]);
+                return agent && agent.toString().trim() !== "";
+              });
 
               applyFilters();
 
-              document
-                .getElementById("error-container")
-                .classList.add("hidden");
-              badgeEl.className =
-                "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
-              if (dotEl)
-                dotEl.className =
-                  "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
+              document.getElementById("error-container").classList.add("hidden");
+              badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
+              if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
               if (textEl) textEl.innerText = "Ligado";
-            },
+            }
           });
         } catch (error) {
           console.error(error);
           document.getElementById("error-container").classList.remove("hidden");
-          badgeEl.className =
-            "flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
+          badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
           if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-red-500 rounded-full";
           if (textEl) textEl.innerText = "Offline";
         }
       }
 
       function applyFilters() {
-        const dateStart = document.getElementById("date-start").value;
-        const dateEnd = document.getElementById("date-end").value;
+        const dateStart = document.getElementById('date-start').value;
+        const dateEnd = document.getElementById('date-end').value;
 
-        currentFilteredData = globalTableData.filter((item) => {
-          const dateStr = getColumnValue(item, [
-            "Fim Atendimento",
-            "FimAtendimento",
-            "Data",
-          ]);
+        currentFilteredData = globalTableData.filter(item => {
+          const dateStr = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data"]);
           const dateObj = parseDateTime(dateStr);
-
+          
           if ((dateStart || dateEnd) && !dateObj) return false;
           if (!dateStart && !dateEnd) return true;
 
@@ -751,21 +543,12 @@
         let totalSecondsFiltered = 0;
 
         data.forEach((item) => {
-          const agent =
-            getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]) ||
-            "Anónimo";
+          const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]) || "Anónimo";
           const status = getColumnValue(item, ["Status"]) || "Desconhecido";
-          const tab =
-            getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto"]) ||
-            "Não Classificado";
-
+          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto"]) || "Não Classificado";
+          
           // Mapeamento preciso da coluna de duração para o cálculo do TMA dinâmico
-          const durationRaw = getColumnValue(item, [
-            "Tempo Atendimento",
-            "TempoAtendimento",
-            "Duração",
-            "Tempo de Atendimento",
-          ]);
+          const durationRaw = getColumnValue(item, ["Tempo Atendimento", "TempoAtendimento", "Duração", "Tempo de Atendimento"]);
 
           // Acumular tempo em segundos para a fórmula: SOMA(Tempo) / CONTAR(Registos)
           totalSecondsFiltered += parseDurationToSeconds(durationRaw);
@@ -773,8 +556,7 @@
           byAgent[agent] = (byAgent[agent] || 0) + 1;
           byStatus[status] = (byStatus[status] || 0) + 1;
 
-          if (!agentMetrics[agent])
-            agentMetrics[agent] = { count: 0, uniqueTabs: new Set() };
+          if (!agentMetrics[agent]) agentMetrics[agent] = { count: 0, uniqueTabs: new Set() };
           agentMetrics[agent].count++;
           agentMetrics[agent].uniqueTabs.add(tab);
         });
@@ -783,16 +565,12 @@
         populateAgentFilter(uniqueAgents);
 
         // CÁLCULO DINÂMICO DO TMA CONFORME O FILTRO
-        // Fórmula aplicada aos dados filtrados: SOMA(Tempo Atendimento) / TOTAL(Registos Filtrados)
-        const tmaSeconds =
-          data.length > 0 ? totalSecondsFiltered / data.length : 0;
-        document.getElementById("kpi-tma").innerText =
-          formatSecondsToClock(tmaSeconds);
+        const tmaSeconds = data.length > 0 ? (totalSecondsFiltered / data.length) : 0;
+        document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
 
         document.getElementById("kpi-total").innerText = data.length;
         document.getElementById("kpi-analysts").innerText = uniqueAgents.length;
-        document.getElementById("last-update").innerText =
-          new Date().toLocaleTimeString("pt-PT");
+        document.getElementById("last-update").innerText = new Date().toLocaleTimeString("pt-PT");
 
         updateCharts(byAgent, byStatus);
         updateTabulacaoChart(data);
@@ -802,80 +580,44 @@
       function updateCharts(byAgent, byStatus) {
         renderChart("chartAnalyst", "bar", {
           labels: Object.keys(byAgent),
-          datasets: [
-            {
-              data: Object.values(byAgent),
-              backgroundColor: "#3b82f6",
-              borderRadius: 12,
-              barThickness: 30,
-            },
-          ],
+          datasets: [{
+            data: Object.values(byAgent),
+            backgroundColor: "#3b82f6",
+            borderRadius: 12,
+            barThickness: 30,
+          }],
         });
 
-        renderChart(
-          "chartStatus",
-          "doughnut",
-          {
-            labels: Object.keys(byStatus),
-            datasets: [
-              {
-                data: Object.values(byStatus),
-                backgroundColor: [
-                  "#10b981",
-                  "#3b82f6",
-                  "#f59e0b",
-                  "#ef4444",
-                  "#8b5cf6",
-                ],
-                borderWidth: 0,
-                hoverOffset: 20,
-              },
-            ],
-          },
-          { cutout: "75%" },
-        );
+        renderChart("chartStatus", "doughnut", {
+          labels: Object.keys(byStatus),
+          datasets: [{
+            data: Object.values(byStatus),
+            backgroundColor: ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"],
+            borderWidth: 0,
+            hoverOffset: 20,
+          }],
+        }, { cutout: "75%" });
       }
 
       function updateTabulacaoChart(data) {
         const byTabulacao = {};
-        const filteredData =
-          currentFilterAgent === "Geral"
-            ? data
-            : data.filter(
-                (item) =>
-                  getColumnValue(item, [
-                    "Nome Agentes",
-                    "Agente",
-                    "Nome Agente",
-                  ]) === currentFilterAgent,
-              );
+        const filteredData = currentFilterAgent === "Geral" ? data : data.filter(item => getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]) === currentFilterAgent);
 
         filteredData.forEach((item) => {
-          const tab =
-            getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto"]) ||
-            "Não Classificado";
+          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto"]) || "Não Classificado";
           byTabulacao[tab] = (byTabulacao[tab] || 0) + 1;
         });
 
-        const sortedTabs = Object.entries(byTabulacao)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 10);
-        renderChart(
-          "chartProtocol",
-          "bar",
-          {
-            labels: sortedTabs.map((s) => s[0]),
-            datasets: [
-              {
-                data: sortedTabs.map((s) => s[1]),
-                backgroundColor: "#8b5cf6",
-                borderRadius: 8,
-                barThickness: 20,
-              },
-            ],
-          },
-          { indexAxis: "y" },
-        );
+        const sortedTabs = Object.entries(byTabulacao).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        renderChart("chartProtocol", "bar", {
+          labels: sortedTabs.map((s) => s[0]),
+          datasets: [{
+            data: sortedTabs.map((s) => s[1]),
+            backgroundColor: "#8b5cf6",
+            borderRadius: 8,
+            barThickness: 20,
+          }],
+        }, { indexAxis: "y" });
       }
 
       function renderChart(id, type, data, options = {}) {
@@ -892,37 +634,21 @@
               legend: {
                 display: type === "doughnut",
                 position: "bottom",
-                labels: {
-                  usePointStyle: true,
-                  font: { size: 10, weight: "bold" },
-                },
+                labels: { usePointStyle: true, font: { size: 10, weight: "bold" } },
               },
               datalabels: {
                 display: true,
-                color: (ctx) =>
-                  getContrastColor(
-                    ctx.dataset.backgroundColor[ctx.dataIndex] ||
-                      ctx.dataset.backgroundColor,
-                  ),
+                color: (ctx) => getContrastColor(ctx.dataset.backgroundColor[ctx.dataIndex] || ctx.dataset.backgroundColor),
                 font: { weight: "800", size: 11 },
                 anchor: "center",
                 align: "center",
                 formatter: Math.round,
               },
             },
-            scales:
-              type === "bar"
-                ? {
-                    y: {
-                      grid: { display: false },
-                      ticks: { font: { weight: "bold", size: 10 } },
-                    },
-                    x: {
-                      grid: { display: false },
-                      ticks: { font: { weight: "bold", size: 10 } },
-                    },
-                  }
-                : {},
+            scales: type === "bar" ? {
+              y: { grid: { display: false }, ticks: { font: { weight: "bold", size: 10 } } },
+              x: { grid: { display: false }, ticks: { font: { weight: "bold", size: 10 } } },
+            } : {},
             ...options,
           },
         });
@@ -931,13 +657,11 @@
       function updateTable(metrics) {
         const tbody = document.getElementById("table-body");
         tbody.innerHTML = "";
-        Object.keys(metrics)
-          .sort((a, b) => metrics[b].count - metrics[a].count)
-          .forEach((name) => {
-            const count = metrics[name].count;
-            const numTabs = metrics[name].uniqueTabs.size;
-            const avg = numTabs > 0 ? (count / numTabs).toFixed(2) : 0;
-            tbody.innerHTML += `
+        Object.keys(metrics).sort((a, b) => metrics[b].count - metrics[a].count).forEach((name) => {
+          const count = metrics[name].count;
+          const numTabs = metrics[name].uniqueTabs.size;
+          const avg = numTabs > 0 ? (count / numTabs).toFixed(2) : 0;
+          tbody.innerHTML += `
             <tr class="table-row-hover transition-colors">
               <td class="py-5 px-4"><span class="font-bold text-slate-700">${name}</span></td>
               <td class="py-5 px-4 font-black text-blue-600">${count}</td>
@@ -947,7 +671,7 @@
                 </span>
               </td>
             </tr>`;
-          });
+        });
       }
 
       // Início
