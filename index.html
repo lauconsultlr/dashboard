@@ -307,6 +307,7 @@
       </div>
     </div>
 
+    <!-- Container de Erro -->
     <div id="error-container" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white rounded-[2rem] p-8 max-sm w-full text-center shadow-2xl">
         <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -335,10 +336,18 @@
       lucide.createIcons();
 
       window.onload = () => {
+        // Recuperar filtros da visão Operacional
         const savedStart = localStorage.getItem('dash_filter_start');
         const savedEnd = localStorage.getItem('dash_filter_end');
         if (savedStart) document.getElementById('date-start').value = savedStart;
         if (savedEnd) document.getElementById('date-end').value = savedEnd;
+
+        // Recuperar filtros da visão de Vendas
+        const savedVendasStart = localStorage.getItem('vendas_filter_start');
+        const savedVendasEnd = localStorage.getItem('vendas_filter_end');
+        if (savedVendasStart) document.getElementById('vendas-date-start').value = savedVendasStart;
+        if (savedVendasEnd) document.getElementById('vendas-date-end').value = savedVendasEnd;
+        
         fetchData();
       };
 
@@ -367,6 +376,8 @@
       function resetVendasFilters() {
         document.getElementById('vendas-date-start').value = '';
         document.getElementById('vendas-date-end').value = '';
+        localStorage.removeItem('vendas_filter_start');
+        localStorage.removeItem('vendas_filter_end');
         applyVendasFilters();
       }
 
@@ -463,7 +474,6 @@
         const dotEl = document.getElementById("status-dot");
         const textEl = document.getElementById("status-text");
         
-        // Seleciona o URL baseado na visão atual
         const targetUrl = currentView === 'operacional' ? SHEET_URL_OPERACIONAL : SHEET_URL_VENDAS;
         const fetchUrl = targetUrl + "&t=" + Date.now();
 
@@ -619,6 +629,11 @@
       function applyVendasFilters() {
         const dateStart = document.getElementById('vendas-date-start').value;
         const dateEnd = document.getElementById('vendas-date-end').value;
+
+        // Persistência dos filtros de vendas
+        localStorage.setItem('vendas_filter_start', dateStart);
+        localStorage.setItem('vendas_filter_end', dateEnd);
+
         currentFilteredVendas = globalVendasData.filter(item => {
           if (!dateStart && !dateEnd) return true;
           const dateStr = getColumnValue(item, ["vencimento do certificado", "vencimento", "data de vencimento", "vencimento certificado", "data vencimento", "validade"]);
@@ -637,7 +652,6 @@
         data.forEach(item => {
            let statusRaw = getColumnValue(item, ["status do processo de renovação", "status", "renovação", "situação", "status renovação", "etapa", "processo"]);
            if (statusRaw) {
-               // NORMALIZAÇÃO PARA AGRUPAR "PEDIDO CRIADO"
                let s = statusRaw.toString().trim().toLowerCase();
                let finalKey = null;
 
@@ -648,7 +662,6 @@
                if (finalKey) {
                    byStatus[finalKey]++;
                } else {
-                   // Fallback para outros status, mantendo padrão Capitalizado
                    let formatted = s.charAt(0).toUpperCase() + s.slice(1);
                    byStatus[formatted] = (byStatus[formatted] || 0) + 1;
                }
