@@ -279,7 +279,7 @@
     </div>
 
     <div id="error-container" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-2xl">
+      <div class="bg-white rounded-[2rem] p-8 max-sm w-full text-center shadow-2xl">
         <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
           <i data-lucide="wifi-off" class="w-10 h-10"></i>
         </div>
@@ -302,7 +302,6 @@
       Chart.register(ChartDataLabels);
       lucide.createIcons();
 
-      // Inicializar campos de data a partir do localStorage
       window.onload = () => {
         const savedStart = localStorage.getItem('dash_filter_start');
         const savedEnd = localStorage.getItem('dash_filter_end');
@@ -361,7 +360,7 @@
       const parseDurationToSeconds = (val) => {
         if (val === null || val === undefined || val === "") return 0;
         if (typeof val === "number") return val * 86400;
-        const str = val.toString().trim();
+        const str = val.toString().trim().replace(',', '.');
         if (str.includes(":")) {
           const parts = str.split(":").map((p) => parseFloat(p) || 0);
           if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
@@ -401,31 +400,33 @@
       }
 
       const getColumnValue = (row, possibleNames) => {
+        const normalizedKeys = Object.keys(row).reduce((acc, key) => {
+           acc[key.trim().toLowerCase()] = key;
+           return acc;
+        }, {});
+
         for (let name of possibleNames) {
-          const key = Object.keys(row).find(
-            (k) => k.trim().toLowerCase() === name.toLowerCase()
-          );
-          if (key !== undefined) return row[key];
+          const target = name.trim().toLowerCase();
+          if (normalizedKeys[target]) return row[normalizedKeys[target]];
         }
         return null;
       };
 
       function parseDateTime(dateStr) {
         if (!dateStr) return null;
-        
         const str = dateStr.toString().trim();
+        if (!str || str === "") return null;
         
+        // Formato DD/MM/YYYY com ou sem HH:MM:SS
         if (str.includes('/')) {
-           const parts = str.split(' ');
+           const parts = str.split(/[ ,]+/);
            const dateParts = parts[0].split('/');
-           
            if (dateParts.length === 3) {
               const day = parseInt(dateParts[0]);
               const month = parseInt(dateParts[1]) - 1;
               const year = parseInt(dateParts[2]);
-              
               let h = 0, min = 0, s = 0;
-              if (parts[1]) {
+              if (parts[1] && parts[1].includes(':')) {
                  const timeParts = parts[1].split(':');
                  h = parseInt(timeParts[0]);
                  min = parseInt(timeParts[1]);
@@ -453,23 +454,23 @@
 
           Papa.parse(csvText, {
             header: false,
-            skipEmptyLines: true,
+            skipEmptyLines: 'greedy',
             complete: function (results) {
               const rows = results.data;
               if (rows.length < 1) return;
 
-              // Como a primeira linha foi deletada, a tabela (cabeçalho) agora começa em rows[0]
-              const headers = rows[0];
+              const headers = rows[0].map(h => h ? h.toString().trim() : "");
               const dataRows = rows.slice(1);
 
               globalTableData = dataRows.map(row => {
                 let obj = {};
                 headers.forEach((h, i) => {
-                  if (h) obj[h.trim()] = row[i];
+                  if (h !== "") obj[h] = row[i];
                 });
                 return obj;
               }).filter(item => {
-                const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]);
+                // Validação mínima para evitar linhas fantasmas no fim do CSV
+                const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Analista", "Operador"]);
                 return agent && agent.toString().trim() !== "";
               });
 
@@ -495,11 +496,12 @@
         const dateEnd = document.getElementById('date-end').value;
 
         currentFilteredData = globalTableData.filter(item => {
-          const dateStr = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data"]);
+          if (!dateStart && !dateEnd) return true;
+
+          const dateStr = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data", "Finalizado"]);
           const dateObj = parseDateTime(dateStr);
           
-          if ((dateStart || dateEnd) && !dateObj) return false;
-          if (!dateStart && !dateEnd) return true;
+          if (!dateObj) return false; 
 
           if (dateStart) {
             const start = new Date(dateStart + "T00:00:00");
@@ -543,14 +545,11 @@
         let totalSecondsFiltered = 0;
 
         data.forEach((item) => {
-          const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]) || "Anónimo";
-          const status = getColumnValue(item, ["Status"]) || "Desconhecido";
-          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto"]) || "Não Classificado";
-          
-          // Mapeamento preciso da coluna de duração para o cálculo do TMA dinâmico
-          const durationRaw = getColumnValue(item, ["Tempo Atendimento", "TempoAtendimento", "Duração", "Tempo de Atendimento"]);
+          const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Analista", "Operador"]) || "Anónimo";
+          const status = getColumnValue(item, ["Status", "Estado", "Situação"]) || "Desconhecido";
+          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto", "Motivo"]) || "Não Classificado";
+          const durationRaw = getColumnValue(item, ["Tempo Atendimento", "TempoAtendimento", "Duração", "Tempo de Atendimento", "Duration"]);
 
-          // Acumular tempo em segundos para a fórmula: SOMA(Tempo) / CONTAR(Registos)
           totalSecondsFiltered += parseDurationToSeconds(durationRaw);
 
           byAgent[agent] = (byAgent[agent] || 0) + 1;
@@ -564,10 +563,8 @@
         const uniqueAgents = Object.keys(byAgent);
         populateAgentFilter(uniqueAgents);
 
-        // CÁLCULO DINÂMICO DO TMA CONFORME O FILTRO
         const tmaSeconds = data.length > 0 ? (totalSecondsFiltered / data.length) : 0;
         document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
-
         document.getElementById("kpi-total").innerText = data.length;
         document.getElementById("kpi-analysts").innerText = uniqueAgents.length;
         document.getElementById("last-update").innerText = new Date().toLocaleTimeString("pt-PT");
@@ -578,10 +575,12 @@
       }
 
       function updateCharts(byAgent, byStatus) {
+        const sortedAgents = Object.entries(byAgent).sort((a,b) => b[1] - a[1]);
+
         renderChart("chartAnalyst", "bar", {
-          labels: Object.keys(byAgent),
+          labels: sortedAgents.map(a => a[0]),
           datasets: [{
-            data: Object.values(byAgent),
+            data: sortedAgents.map(a => a[1]),
             backgroundColor: "#3b82f6",
             borderRadius: 12,
             barThickness: 30,
@@ -601,10 +600,10 @@
 
       function updateTabulacaoChart(data) {
         const byTabulacao = {};
-        const filteredData = currentFilterAgent === "Geral" ? data : data.filter(item => getColumnValue(item, ["Nome Agentes", "Agente", "Nome Agente"]) === currentFilterAgent);
+        const filteredData = currentFilterAgent === "Geral" ? data : data.filter(item => getColumnValue(item, ["Nome Agentes", "Agente", "Analista", "Operador"]) === currentFilterAgent);
 
         filteredData.forEach((item) => {
-          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto"]) || "Não Classificado";
+          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto", "Motivo"]) || "Não Classificado";
           byTabulacao[tab] = (byTabulacao[tab] || 0) + 1;
         });
 
