@@ -99,11 +99,6 @@
             <i data-lucide="shopping-cart" class="w-6 h-6"></i>
           </div>
         </nav>
-        <div class="mt-auto text-slate-300">
-          <button onclick="toggleSettingsModal()" class="p-2 hover:bg-slate-50 hover:text-slate-600 rounded-2xl transition-all">
-            <i data-lucide="settings" class="w-6 h-6"></i>
-          </button>
-        </div>
       </div>
 
       <div class="flex-1 p-4 md:p-10 max-w-[1600px] mx-auto w-full">
@@ -125,7 +120,7 @@
                 <p id="last-update" class="text-sm font-bold text-slate-700">--:--:--</p>
               </div>
               <div class="w-px h-8 bg-slate-100"></div>
-              <button onclick="manualRefresh()" class="w-10 h-10 bg-slate-50 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-all active:scale-90" title="Atualizar agora">
+              <button onclick="manualRefresh()" class="w-10 h-10 bg-slate-50 hover:bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-all active:scale-90" title="Sincronizar agora">
                 <i data-lucide="refresh-cw" class="w-5 h-5"></i>
               </button>
             </div>
@@ -242,42 +237,6 @@
       </div>
     </div>
 
-    <!-- Modal de Configurações -->
-    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white rounded-[2rem] p-8 max-sm w-full shadow-2xl">
-        <div class="flex items-center gap-4 mb-6">
-          <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
-            <i data-lucide="settings" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h2 class="text-xl font-black text-slate-900">Configurações</h2>
-            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Painel de Controlo</p>
-          </div>
-        </div>
-        
-        <div class="space-y-6">
-          <div>
-            <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Tempo de Atualização (Segundos)</label>
-            <div class="relative">
-              <input 
-                id="refresh-input" 
-                type="number" 
-                min="1" 
-                max="300" 
-                class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold text-slate-700 focus:border-blue-500 focus:ring-0 transition-all outline-none"
-              >
-              <span class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold">s</span>
-            </div>
-          </div>
-
-          <div class="flex gap-3">
-            <button onclick="toggleSettingsModal()" class="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold hover:bg-slate-100 transition-all">Cancelar</button>
-            <button onclick="saveSettings()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Guardar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div id="error-container" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white rounded-[2rem] p-8 max-sm w-full text-center shadow-2xl">
         <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -291,22 +250,23 @@
 
     <script>
       const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
-      let REFRESH_INTERVAL = parseInt(localStorage.getItem('dash_refresh_interval')) || 5;
 
       let charts = {};
       let globalTableData = []; 
       let currentFilteredData = []; 
       let currentFilterAgent = "Geral";
-      let refreshTimer = null;
 
       Chart.register(ChartDataLabels);
       lucide.createIcons();
 
+      // Inicializar campos de data a partir do localStorage
       window.onload = () => {
         const savedStart = localStorage.getItem('dash_filter_start');
         const savedEnd = localStorage.getItem('dash_filter_end');
         if (savedStart) document.getElementById('date-start').value = savedStart;
         if (savedEnd) document.getElementById('date-end').value = savedEnd;
+        // Carregamento inicial único
+        fetchData();
       };
 
       function updateFilterStorage() {
@@ -317,36 +277,9 @@
         applyFilters();
       }
 
-      function toggleSettingsModal() {
-        const modal = document.getElementById('settings-modal');
-        const input = document.getElementById('refresh-input');
-        if (modal.classList.contains('hidden')) {
-          input.value = REFRESH_INTERVAL;
-          modal.classList.remove('hidden');
-        } else {
-          modal.classList.add('hidden');
-        }
-      }
-
-      function saveSettings() {
-        const input = document.getElementById('refresh-input');
-        const newValue = parseInt(input.value);
-        if (newValue && newValue >= 1) {
-          REFRESH_INTERVAL = newValue;
-          localStorage.setItem('dash_refresh_interval', newValue);
-          startAutoRefresh();
-          toggleSettingsModal();
-        }
-      }
-
-      function startAutoRefresh() {
-        if (refreshTimer) clearInterval(refreshTimer);
-        refreshTimer = setInterval(fetchData, REFRESH_INTERVAL * 1000);
-      }
-
+      // Função para atualização manual instantânea
       function manualRefresh() {
         fetchData();
-        startAutoRefresh();
       }
 
       function resetFilters() {
@@ -417,7 +350,6 @@
         const str = dateStr.toString().trim();
         if (!str || str === "") return null;
         
-        // Formato DD/MM/YYYY com ou sem HH:MM:SS
         if (str.includes('/')) {
            const parts = str.split(/[ ,]+/);
            const dateParts = parts[0].split('/');
@@ -469,9 +401,13 @@
                 });
                 return obj;
               }).filter(item => {
-                // Validação mínima para evitar linhas fantasmas no fim do CSV
                 const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Analista", "Operador"]);
-                return agent && agent.toString().trim() !== "";
+                const date = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data", "Finalizado"]);
+                
+                const isHeaderRepeat = agent && (agent.toString().toLowerCase() === "agente" || agent.toString().toLowerCase() === "nome agentes");
+                const hasData = agent && agent.toString().trim() !== "" && date && date.toString().trim() !== "";
+                
+                return hasData && !isHeaderRepeat;
               });
 
               applyFilters();
@@ -479,7 +415,7 @@
               document.getElementById("error-container").classList.add("hidden");
               badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
               if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
-              if (textEl) textEl.innerText = "Ligado";
+              if (textEl) textEl.innerText = "Sincronizado";
             }
           });
         } catch (error) {
@@ -672,10 +608,6 @@
             </tr>`;
         });
       }
-
-      // Início
-      fetchData();
-      startAutoRefresh();
     </script>
   </body>
 </html>
