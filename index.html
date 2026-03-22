@@ -65,6 +65,19 @@
 
       .table-row-hover:hover { background-color: #f8fafc; }
 
+      .nav-item {
+        padding: 0.875rem;
+        border-radius: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #94a3b8;
+      }
+
+      .nav-item:hover {
+        background-color: #f8fafc;
+        color: #64748b;
+      }
+
       .nav-item-active {
         background-color: #eff6ff;
         color: #3b82f6;
@@ -82,6 +95,10 @@
         background-position: right 0.75rem center;
         background-size: 1em;
       }
+      
+      .hidden-view {
+        display: none !important;
+      }
     </style>
   </head>
   <body class="text-slate-800">
@@ -91,11 +108,21 @@
         <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 cursor-pointer mb-4">
           <i data-lucide="activity" class="w-6 h-6"></i>
         </div>
-        <nav class="flex flex-col gap-8 text-slate-400">
-          <div class="nav-item-active p-3.5 rounded-2xl cursor-pointer transition-all group" title="Dashboard Operacional">
+        <nav class="flex flex-col gap-8">
+          <div 
+            id="nav-operacional"
+            onclick="switchView('operacional')"
+            class="nav-item nav-item-active group" 
+            title="Dashboard Operacional"
+          >
             <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
           </div>
-          <div class="p-3.5 hover:bg-slate-50 hover:text-slate-600 rounded-2xl cursor-pointer transition-all" title="Visão de Vendas">
+          <div 
+            id="nav-vendas"
+            onclick="switchView('vendas')"
+            class="nav-item group" 
+            title="Visão de Vendas"
+          >
             <i data-lucide="shopping-cart" class="w-6 h-6"></i>
           </div>
         </nav>
@@ -104,7 +131,7 @@
       <div class="flex-1 p-4 md:p-10 max-w-[1600px] mx-auto w-full">
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
-            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Operacional</h1>
+            <h1 id="page-title" class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Operacional</h1>
             <div class="flex items-center gap-3 mt-2">
               <span id="status-badge" class="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-100 text-slate-500 text-[11px] font-bold uppercase tracking-widest shadow-sm">
                 <span id="status-dot" class="w-2 h-2 bg-slate-300 rounded-full"></span>
@@ -127,113 +154,158 @@
           </div>
         </header>
 
-        <!-- Filtros de Tempo Real -->
-        <section class="mb-8 flex flex-wrap items-end gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-           <div class="flex flex-col gap-2">
-             <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Início</label>
-             <input type="date" id="date-start" onchange="updateFilterStorage()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
-           </div>
-
-           <div class="flex flex-col gap-2">
-             <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Fim</label>
-             <input type="date" id="date-end" onchange="updateFilterStorage()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
-           </div>
-
-           <button onclick="resetFilters()" class="p-3 text-slate-400 hover:text-blue-600 transition-colors" title="Limpar Filtros">
-             <i data-lucide="filter-x" class="w-5 h-5"></i>
-           </button>
-           <p class="text-[10px] text-slate-300 font-bold uppercase tracking-tight mb-2.5">Baseado em Fim Atendimento</p>
-        </section>
-
-        <main class="space-y-8">
-          <!-- KPI Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="gym-card p-8 flex items-center gap-6">
-              <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
-                <i data-lucide="message-square" class="w-8 h-8"></i>
+        <!-- VIEW OPERACIONAL -->
+        <div id="view-operacional">
+            <!-- Filtros Operacional -->
+            <section class="mb-8 flex flex-wrap items-end gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+               <div class="flex flex-col gap-2">
+                 <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Início</label>
+                 <input type="date" id="date-start" onchange="updateFilterStorage()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+               </div>
+    
+               <div class="flex flex-col gap-2">
+                 <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Fim</label>
+                 <input type="date" id="date-end" onchange="updateFilterStorage()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+               </div>
+    
+               <button onclick="resetFilters()" class="p-3 text-slate-400 hover:text-blue-600 transition-colors" title="Limpar Filtros">
+                 <i data-lucide="filter-x" class="w-5 h-5"></i>
+               </button>
+               <p class="text-[10px] text-slate-300 font-bold uppercase tracking-tight mb-2.5">Baseado em Fim Atendimento</p>
+            </section>
+    
+            <main class="space-y-8">
+              <!-- KPI Cards -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="gym-card p-8 flex items-center gap-6">
+                  <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
+                    <i data-lucide="message-square" class="w-8 h-8"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Atendimentos</p>
+                    <h2 id="kpi-total" class="text-4xl font-black text-slate-900 mt-1">0</h2>
+                  </div>
+                </div>
+    
+                <div class="gym-card p-8 flex items-center gap-6">
+                  <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+                    <i data-lucide="clock" class="w-8 h-8"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">TMA</p>
+                    <h2 id="kpi-tma" class="text-4xl font-black text-slate-900 mt-1">00:00:00</h2>
+                  </div>
+                </div>
+    
+                <div class="gym-card p-8 flex items-center gap-6">
+                  <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
+                    <i data-lucide="users-2" class="w-8 h-8"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Agentes Ativos</p>
+                    <h2 id="kpi-analysts" class="text-4xl font-black text-slate-900 mt-1">0</h2>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Atendimentos</p>
-                <h2 id="kpi-total" class="text-4xl font-black text-slate-900 mt-1">0</h2>
+    
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="gym-card p-8 lg:col-span-1">
+                  <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-xl font-extrabold text-slate-900">Volume Agente</h3>
+                    <i data-lucide="more-horizontal" class="text-slate-300"></i>
+                  </div>
+                  <div class="chart-container">
+                    <canvas id="chartAnalyst"></canvas>
+                  </div>
+                </div>
+    
+                <div class="gym-card p-8 lg:col-span-1">
+                  <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-xl font-extrabold text-slate-900">Status Total</h3>
+                    <i data-lucide="activity" class="text-slate-300"></i>
+                  </div>
+                  <div class="chart-container flex items-center justify-center">
+                    <canvas id="chartStatus"></canvas>
+                  </div>
+                </div>
+    
+                <div class="gym-card p-8 lg:col-span-1">
+                  <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-xl font-extrabold text-slate-900">Tabulações</h3>
+                    <select id="agent-filter" onchange="handleAgentFilterChange()" class="filter-select bg-slate-50 border-none text-[10px] font-black uppercase text-slate-500 rounded-xl px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                      <option value="Geral">Geral</option>
+                    </select>
+                  </div>
+                  <div class="chart-container">
+                    <canvas id="chartProtocol"></canvas>
+                  </div>
+                </div>
               </div>
+    
+              <div class="gym-card p-8 overflow-hidden">
+                <div class="flex items-center justify-between mb-8">
+                  <div>
+                    <h3 class="text-xl font-extrabold text-slate-900">Produtividade da Equipa</h3>
+                    <p class="text-xs text-slate-400 font-medium mt-1">Média de contactos distribuídos por tabulação única</p>
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                    <thead>
+                      <tr class="text-slate-400 text-[11px] uppercase font-black tracking-[0.2em]">
+                        <th class="pb-6 px-4">Informação do Agente</th>
+                        <th class="pb-6 px-4">Volume Total</th>
+                        <th class="pb-6 px-4 text-right">Média/Tabulação</th>
+                      </tr>
+                    </thead>
+                    <tbody id="table-body" class="text-slate-700 font-medium"></tbody>
+                  </table>
+                </div>
+              </div>
+            </main>
+        </div>
+
+        <!-- VIEW VENDAS -->
+        <div id="view-vendas" class="hidden-view">
+            <section class="mb-8 flex flex-wrap items-end gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                <div class="flex flex-col gap-2">
+                  <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Início</label>
+                  <input type="date" id="vendas-date-start" onchange="applyVendasFilters()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                </div>
+     
+                <div class="flex flex-col gap-2">
+                  <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Data Fim</label>
+                  <input type="date" id="vendas-date-end" onchange="applyVendasFilters()" class="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                </div>
+     
+                <button onclick="resetVendasFilters()" class="p-3 text-slate-400 hover:text-blue-600 transition-colors" title="Limpar Filtros">
+                  <i data-lucide="filter-x" class="w-5 h-5"></i>
+                </button>
+                <p class="text-[10px] text-slate-300 font-bold uppercase tracking-tight mb-2.5">Baseado em Vencimento do Certificado</p>
+            </section>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="gym-card p-8">
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-xl font-extrabold text-slate-900">Status do Processo de Renovação</h3>
+                        <i data-lucide="pie-chart" class="text-slate-300"></i>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartVendasStatus"></canvas>
+                    </div>
+                </div>
+
+                <div class="gym-card p-8">
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-xl font-extrabold text-slate-900">Vencimentos por Mês</h3>
+                        <i data-lucide="trending-up" class="text-slate-300"></i>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartVendasVencimento"></canvas>
+                    </div>
+                </div>
             </div>
-
-            <div class="gym-card p-8 flex items-center gap-6">
-              <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
-                <i data-lucide="clock" class="w-8 h-8"></i>
-              </div>
-              <div>
-                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">TMA</p>
-                <h2 id="kpi-tma" class="text-4xl font-black text-slate-900 mt-1">00:00:00</h2>
-              </div>
-            </div>
-
-            <div class="gym-card p-8 flex items-center gap-6">
-              <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center">
-                <i data-lucide="users-2" class="w-8 h-8"></i>
-              </div>
-              <div>
-                <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Agentes Ativos</p>
-                <h2 id="kpi-analysts" class="text-4xl font-black text-slate-900 mt-1">0</h2>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="gym-card p-8 lg:col-span-1">
-              <div class="flex items-center justify-between mb-8">
-                <h3 class="text-xl font-extrabold text-slate-900">Volume Agente</h3>
-                <i data-lucide="more-horizontal" class="text-slate-300"></i>
-              </div>
-              <div class="chart-container">
-                <canvas id="chartAnalyst"></canvas>
-              </div>
-            </div>
-
-            <div class="gym-card p-8 lg:col-span-1">
-              <div class="flex items-center justify-between mb-8">
-                <h3 class="text-xl font-extrabold text-slate-900">Status Total</h3>
-                <i data-lucide="activity" class="text-slate-300"></i>
-              </div>
-              <div class="chart-container flex items-center justify-center">
-                <canvas id="chartStatus"></canvas>
-              </div>
-            </div>
-
-            <div class="gym-card p-8 lg:col-span-1">
-              <div class="flex items-center justify-between mb-8">
-                <h3 class="text-xl font-extrabold text-slate-900">Tabulações</h3>
-                <select id="agent-filter" onchange="handleAgentFilterChange()" class="filter-select bg-slate-50 border-none text-[10px] font-black uppercase text-slate-500 rounded-xl px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
-                  <option value="Geral">Geral</option>
-                </select>
-              </div>
-              <div class="chart-container">
-                <canvas id="chartProtocol"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <div class="gym-card p-8 overflow-hidden">
-            <div class="flex items-center justify-between mb-8">
-              <div>
-                <h3 class="text-xl font-extrabold text-slate-900">Produtividade da Equipa</h3>
-                <p class="text-xs text-slate-400 font-medium mt-1">Média de contactos distribuídos por tabulação única</p>
-              </div>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left">
-                <thead>
-                  <tr class="text-slate-400 text-[11px] uppercase font-black tracking-[0.2em]">
-                    <th class="pb-6 px-4">Informação do Agente</th>
-                    <th class="pb-6 px-4">Volume Total</th>
-                    <th class="pb-6 px-4 text-right">Média/Tabulação</th>
-                  </tr>
-                </thead>
-                <tbody id="table-body" class="text-slate-700 font-medium"></tbody>
-              </table>
-            </div>
-          </div>
-        </main>
+        </div>
       </div>
     </div>
 
@@ -249,35 +321,44 @@
     </div>
 
     <script>
-      const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
+      // URLs das Planilhas (Substitua o gid conforme necessário)
+      const SHEET_URL_OPERACIONAL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=0&single=true&output=csv";
+      // NOTA: Substitua o gid=XXXX pela ID da sua guia de Vendas
+      const SHEET_URL_VENDAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5bc0Y3SVMEPYHIcIZbzthgmgI2dLs04d7K0NNBBXa9WclGK5Q15YP7tuPn4A6XYe9MxySm-n1wOZq/pub?gid=VENDAS_GID&single=true&output=csv";
 
       let charts = {};
       let globalTableData = []; 
+      let globalVendasData = [];
       let currentFilteredData = []; 
+      let currentFilteredVendas = [];
       let currentFilterAgent = "Geral";
+      let currentView = 'operacional';
 
       Chart.register(ChartDataLabels);
       lucide.createIcons();
 
-      // Inicializar campos de data a partir do localStorage
       window.onload = () => {
         const savedStart = localStorage.getItem('dash_filter_start');
         const savedEnd = localStorage.getItem('dash_filter_end');
         if (savedStart) document.getElementById('date-start').value = savedStart;
         if (savedEnd) document.getElementById('date-end').value = savedEnd;
-        // Carregamento inicial único
-        fetchData();
+        
+        fetchData(); // Carregamento inicial
       };
 
-      function updateFilterStorage() {
-        const start = document.getElementById('date-start').value;
-        const end = document.getElementById('date-end').value;
-        localStorage.setItem('dash_filter_start', start);
-        localStorage.setItem('dash_filter_end', end);
-        applyFilters();
+      function switchView(view) {
+        currentView = view;
+        document.getElementById('view-operacional').classList.toggle('hidden-view', view !== 'operacional');
+        document.getElementById('view-vendas').classList.toggle('hidden-view', view !== 'vendas');
+        
+        document.getElementById('nav-operacional').classList.toggle('nav-item-active', view === 'operacional');
+        document.getElementById('nav-vendas').classList.toggle('nav-item-active', view === 'vendas');
+        
+        document.getElementById('page-title').innerText = view === 'operacional' ? 'Dashboard Operacional' : 'Dashboard de Vendas';
+        
+        fetchData();
       }
 
-      // Função para atualização manual instantânea
       function manualRefresh() {
         fetchData();
       }
@@ -287,6 +368,20 @@
         document.getElementById('date-end').value = '';
         localStorage.removeItem('dash_filter_start');
         localStorage.removeItem('dash_filter_end');
+        applyFilters();
+      }
+      
+      function resetVendasFilters() {
+        document.getElementById('vendas-date-start').value = '';
+        document.getElementById('vendas-date-end').value = '';
+        applyVendasFilters();
+      }
+
+      function updateFilterStorage() {
+        const start = document.getElementById('date-start').value;
+        const end = document.getElementById('date-end').value;
+        localStorage.setItem('dash_filter_start', start);
+        localStorage.setItem('dash_filter_end', end);
         applyFilters();
       }
 
@@ -377,9 +472,10 @@
         const badgeEl = document.getElementById("status-badge");
         const dotEl = document.getElementById("status-dot");
         const textEl = document.getElementById("status-text");
+        const targetUrl = currentView === 'operacional' ? SHEET_URL_OPERACIONAL : SHEET_URL_VENDAS;
 
         try {
-          const urlWithTime = `${SHEET_URL}${SHEET_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
+          const urlWithTime = `${targetUrl}${targetUrl.includes("?") ? "&" : "?"}t=${Date.now()}`;
           const response = await fetch(urlWithTime, { mode: "cors", cache: "no-store" });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const csvText = await response.text();
@@ -394,28 +490,34 @@
               const headers = rows[0].map(h => h ? h.toString().trim() : "");
               const dataRows = rows.slice(1);
 
-              globalTableData = dataRows.map(row => {
-                let obj = {};
-                headers.forEach((h, i) => {
-                  if (h !== "") obj[h] = row[i];
-                });
-                return obj;
-              }).filter(item => {
-                const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Analista", "Operador"]);
-                const date = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data", "Finalizado"]);
-                
-                const isHeaderRepeat = agent && (agent.toString().toLowerCase() === "agente" || agent.toString().toLowerCase() === "nome agentes");
-                const hasData = agent && agent.toString().trim() !== "" && date && date.toString().trim() !== "";
-                
-                return hasData && !isHeaderRepeat;
-              });
-
-              applyFilters();
+              if (currentView === 'operacional') {
+                  globalTableData = dataRows.map(row => {
+                    let obj = {};
+                    headers.forEach((h, i) => { if (h !== "") obj[h] = row[i]; });
+                    return obj;
+                  }).filter(item => {
+                    const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Analista"]);
+                    const date = getColumnValue(item, ["Fim Atendimento", "Data"]);
+                    return agent && agent.toString().trim() !== "" && date && !agent.toString().toLowerCase().includes("agente");
+                  });
+                  applyFilters();
+              } else {
+                  globalVendasData = dataRows.map(row => {
+                    let obj = {};
+                    headers.forEach((h, i) => { if (h !== "") obj[h] = row[i]; });
+                    return obj;
+                  }).filter(item => {
+                    const status = getColumnValue(item, ["status do processo de renovação", "status", "renovação"]);
+                    return status && status.toString().trim() !== "";
+                  });
+                  applyVendasFilters();
+              }
 
               document.getElementById("error-container").classList.add("hidden");
               badgeEl.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold uppercase tracking-widest shadow-sm";
               if (dotEl) dotEl.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full pulse-live";
               if (textEl) textEl.innerText = "Sincronizado";
+              document.getElementById("last-update").innerText = new Date().toLocaleTimeString("pt-PT");
             }
           });
         } catch (error) {
@@ -427,67 +529,37 @@
         }
       }
 
+      // LOGICA OPERACIONAL
       function applyFilters() {
         const dateStart = document.getElementById('date-start').value;
         const dateEnd = document.getElementById('date-end').value;
 
         currentFilteredData = globalTableData.filter(item => {
           if (!dateStart && !dateEnd) return true;
-
-          const dateStr = getColumnValue(item, ["Fim Atendimento", "FimAtendimento", "Data", "Finalizado"]);
+          const dateStr = getColumnValue(item, ["Fim Atendimento", "Data"]);
           const dateObj = parseDateTime(dateStr);
-          
           if (!dateObj) return false; 
-
-          if (dateStart) {
-            const start = new Date(dateStart + "T00:00:00");
-            if (dateObj < start) return false;
-          }
-
-          if (dateEnd) {
-            const end = new Date(dateEnd + "T23:59:59");
-            if (dateObj > end) return false;
-          }
-
+          if (dateStart && dateObj < new Date(dateStart + "T00:00:00")) return false;
+          if (dateEnd && dateObj > new Date(dateEnd + "T23:59:59")) return false;
           return true;
         });
 
-        processData(currentFilteredData);
+        processOperacionalData(currentFilteredData);
       }
 
-      function populateAgentFilter(agents) {
-        const select = document.getElementById("agent-filter");
-        const currentVal = select.value;
-        while (select.options.length > 1) select.remove(1);
-        agents.sort().forEach((agent) => {
-          const opt = document.createElement("option");
-          opt.value = agent;
-          opt.innerHTML = agent;
-          select.appendChild(opt);
-        });
-        if (agents.includes(currentVal)) select.value = currentVal;
-        else select.value = "Geral";
-      }
-
-      function handleAgentFilterChange() {
-        currentFilterAgent = document.getElementById("agent-filter").value;
-        updateTabulacaoChart(currentFilteredData);
-      }
-
-      function processData(data) {
+      function processOperacionalData(data) {
         const byAgent = {};
         const byStatus = {};
         const agentMetrics = {};
         let totalSecondsFiltered = 0;
 
         data.forEach((item) => {
-          const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Analista", "Operador"]) || "Anónimo";
-          const status = getColumnValue(item, ["Status", "Estado", "Situação"]) || "Desconhecido";
-          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto", "Motivo"]) || "Não Classificado";
-          const durationRaw = getColumnValue(item, ["Tempo Atendimento", "TempoAtendimento", "Duração", "Tempo de Atendimento", "Duration"]);
+          const agent = getColumnValue(item, ["Nome Agentes", "Agente", "Analista"]) || "Anónimo";
+          const status = getColumnValue(item, ["Status", "Estado"]) || "Desconhecido";
+          const tab = getColumnValue(item, ["Tabulação", "Assunto"]) || "Não Classificado";
+          const durationRaw = getColumnValue(item, ["Tempo Atendimento", "Duração"]);
 
           totalSecondsFiltered += parseDurationToSeconds(durationRaw);
-
           byAgent[agent] = (byAgent[agent] || 0) + 1;
           byStatus[status] = (byStatus[status] || 0) + 1;
 
@@ -503,23 +575,37 @@
         document.getElementById("kpi-tma").innerText = formatSecondsToClock(tmaSeconds);
         document.getElementById("kpi-total").innerText = data.length;
         document.getElementById("kpi-analysts").innerText = uniqueAgents.length;
-        document.getElementById("last-update").innerText = new Date().toLocaleTimeString("pt-PT");
 
-        updateCharts(byAgent, byStatus);
+        updateOperacionalCharts(byAgent, byStatus);
         updateTabulacaoChart(data);
         updateTable(agentMetrics);
       }
 
-      function updateCharts(byAgent, byStatus) {
-        const sortedAgents = Object.entries(byAgent).sort((a,b) => b[1] - a[1]);
+      function populateAgentFilter(agents) {
+        const select = document.getElementById("agent-filter");
+        const currentVal = select.value;
+        while (select.options.length > 1) select.remove(1);
+        agents.sort().forEach((agent) => {
+          const opt = document.createElement("option");
+          opt.value = agent; opt.innerHTML = agent;
+          select.appendChild(opt);
+        });
+        if (agents.includes(currentVal)) select.value = currentVal;
+        else select.value = "Geral";
+      }
 
+      function handleAgentFilterChange() {
+        currentFilterAgent = document.getElementById("agent-filter").value;
+        updateTabulacaoChart(currentFilteredData);
+      }
+
+      function updateOperacionalCharts(byAgent, byStatus) {
+        const sortedAgents = Object.entries(byAgent).sort((a,b) => b[1] - a[1]);
         renderChart("chartAnalyst", "bar", {
           labels: sortedAgents.map(a => a[0]),
           datasets: [{
             data: sortedAgents.map(a => a[1]),
-            backgroundColor: "#3b82f6",
-            borderRadius: 12,
-            barThickness: 30,
+            backgroundColor: "#3b82f6", borderRadius: 12, barThickness: 30,
           }],
         });
 
@@ -528,33 +614,117 @@
           datasets: [{
             data: Object.values(byStatus),
             backgroundColor: ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"],
-            borderWidth: 0,
-            hoverOffset: 20,
+            borderWidth: 0, hoverOffset: 20,
           }],
         }, { cutout: "75%" });
       }
 
       function updateTabulacaoChart(data) {
         const byTabulacao = {};
-        const filteredData = currentFilterAgent === "Geral" ? data : data.filter(item => getColumnValue(item, ["Nome Agentes", "Agente", "Analista", "Operador"]) === currentFilterAgent);
-
+        const filteredData = currentFilterAgent === "Geral" ? data : data.filter(item => getColumnValue(item, ["Nome Agentes", "Agente"]) === currentFilterAgent);
         filteredData.forEach((item) => {
-          const tab = getColumnValue(item, ["Tabulação", "Tabulacao", "Assunto", "Motivo"]) || "Não Classificado";
+          const tab = getColumnValue(item, ["Tabulação", "Assunto"]) || "Não Classificado";
           byTabulacao[tab] = (byTabulacao[tab] || 0) + 1;
         });
-
         const sortedTabs = Object.entries(byTabulacao).sort((a, b) => b[1] - a[1]).slice(0, 10);
         renderChart("chartProtocol", "bar", {
           labels: sortedTabs.map((s) => s[0]),
           datasets: [{
             data: sortedTabs.map((s) => s[1]),
-            backgroundColor: "#8b5cf6",
-            borderRadius: 8,
-            barThickness: 20,
+            backgroundColor: "#8b5cf6", borderRadius: 8, barThickness: 20,
           }],
         }, { indexAxis: "y" });
       }
 
+      // LOGICA VENDAS
+      function applyVendasFilters() {
+        const dateStart = document.getElementById('vendas-date-start').value;
+        const dateEnd = document.getElementById('vendas-date-end').value;
+
+        currentFilteredVendas = globalVendasData.filter(item => {
+          if (!dateStart && !dateEnd) return true;
+          const dateStr = getColumnValue(item, ["vencimento do certificado", "vencimento", "data"]);
+          const dateObj = parseDateTime(dateStr);
+          if (!dateObj) return false;
+          if (dateStart && dateObj < new Date(dateStart + "T00:00:00")) return false;
+          if (dateEnd && dateObj > new Date(dateEnd + "T23:59:59")) return false;
+          return true;
+        });
+
+        processVendasData(currentFilteredVendas);
+      }
+
+      function processVendasData(data) {
+        const byStatus = { "Não Iniciado": 0, "Pedido Criado": 0, "Renovado": 0 };
+        const byMonth = {};
+        const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+        data.forEach(item => {
+           // Status
+           let status = getColumnValue(item, ["status do processo de renovação", "status"]);
+           if (status) {
+               status = status.toString().trim();
+               if (byStatus.hasOwnProperty(status)) byStatus[status]++;
+               else byStatus[status] = (byStatus[status] || 0) + 1;
+           }
+
+           // Vencimento por Mês
+           const dateStr = getColumnValue(item, ["vencimento do certificado", "vencimento"]);
+           const dateObj = parseDateTime(dateStr);
+           if (dateObj) {
+               const key = `${monthNames[dateObj.getMonth()]} / ${dateObj.getFullYear()}`;
+               byMonth[key] = (byMonth[key] || 0) + 1;
+           }
+        });
+
+        updateVendasCharts(byStatus, byMonth);
+      }
+
+      function updateVendasCharts(byStatus, byMonth) {
+          // Gráfico 1: Status (Doughnut)
+          renderChart("chartVendasStatus", "doughnut", {
+            labels: Object.keys(byStatus),
+            datasets: [{
+              data: Object.values(byStatus),
+              backgroundColor: ["#94a3b8", "#3b82f6", "#10b981"], // Cores: Cinza, Azul, Verde
+              borderWidth: 0,
+            }],
+          }, { cutout: "70%" });
+
+          // Gráfico 2: Vencimentos (Linha)
+          const sortedMonths = Object.entries(byMonth).sort((a, b) => {
+              const parseKey = (k) => {
+                  const parts = k.split(' / ');
+                  const monthIdx = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"].indexOf(parts[0]);
+                  return new Date(parts[1], monthIdx);
+              };
+              return parseKey(a[0]) - parseKey(b[0]);
+          });
+
+          renderChart("chartVendasVencimento", "line", {
+            labels: sortedMonths.map(m => m[0]),
+            datasets: [{
+              label: 'Quantidade',
+              data: sortedMonths.map(m => m[1]),
+              borderColor: "#3b82f6",
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              fill: true,
+              tension: 0.4,
+              pointRadius: 6,
+              pointBackgroundColor: "#3b82f6"
+            }],
+          }, {
+              plugins: {
+                  legend: { display: false }
+              },
+              scales: {
+                  y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                  x: { grid: { display: false } }
+              }
+          });
+      }
+
+      // UTILITÁRIOS
       function renderChart(id, type, data, options = {}) {
         const canvas = document.getElementById(id);
         if (!canvas) return;
@@ -575,9 +745,7 @@
                 display: true,
                 color: (ctx) => getContrastColor(ctx.dataset.backgroundColor[ctx.dataIndex] || ctx.dataset.backgroundColor),
                 font: { weight: "800", size: 11 },
-                anchor: "center",
-                align: "center",
-                formatter: Math.round,
+                anchor: "center", align: "center", formatter: Math.round,
               },
             },
             scales: type === "bar" ? {
@@ -591,6 +759,7 @@
 
       function updateTable(metrics) {
         const tbody = document.getElementById("table-body");
+        if (!tbody) return;
         tbody.innerHTML = "";
         Object.keys(metrics).sort((a, b) => metrics[b].count - metrics[a].count).forEach((name) => {
           const count = metrics[name].count;
